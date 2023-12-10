@@ -11,6 +11,8 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 
+val greenC = Color(0xFF00E676)
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,4 +28,5 @@ val onPrimaryD = Color(0xFFd6d6d6)
 val backgroundD = Color(0xFF121212)
 val secondaryD = Color(0xFF1f1f1f)
 val onSecondaryD = Color(0xFFcccccc)
+// Extra things
 val onSurfaceVariantD = Color(0xFF999999)

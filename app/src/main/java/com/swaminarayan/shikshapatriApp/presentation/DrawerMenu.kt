@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
 import kotlinx.coroutines.launch
 
 
@@ -30,7 +31,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
 
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val screens = listOf(
@@ -38,8 +38,7 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
         Screens.AllAgnaScreen,
         Screens.AEAgnaScreen,
         Screens.ReportScreen,
-        Screens.GoalsScreen,
-        Screens.NotesScreen
+        Screens.GoalsScreen
     )
 
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -53,7 +52,7 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
             .padding(horizontal = 5.dp)
     ) {
 
-        Spacer(modifier = Modifier.height(5.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         screens.forEach { screen ->
             val flag = currentRoute == screen.route
@@ -66,8 +65,14 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
                     scope.launch {
                         drawerState.close()
                     }
-                    navController.navigate(screen.route) {
-                        launchSingleTop = true
+                    if(screen.route == Screens.AEAgnaScreen.route) {
+                        navController.navigate("add_edit_agna_screen/${-1L}") {
+                            launchSingleTop = true
+                        }
+                    } else {
+                        navController.navigate(screen.route) {
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -111,7 +116,8 @@ fun DrawerMenuItem(
             selectedTextColor = MaterialTheme.colorScheme.background,
             unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
             unselectedIconColor = MaterialTheme.colorScheme.onSecondary
-        )
+        ),
+        modifier = Modifier.padding(bottom = 10.dp)
     )
 
 }

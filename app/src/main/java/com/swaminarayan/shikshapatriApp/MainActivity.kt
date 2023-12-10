@@ -1,8 +1,10 @@
 package com.swaminarayan.shikshapatriApp
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -25,20 +27,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.swaminarayan.shikshapatriApp.constants.AGNAID
+import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
+import com.swaminarayan.shikshapatriApp.constants.GOAL_ID
 import com.swaminarayan.shikshapatriApp.presentation.DrawerMenu
 import com.swaminarayan.shikshapatriApp.presentation.Screens
-import com.swaminarayan.shikshapatriApp.presentation.screens.homeScreen.HomeScreen
 import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
 import com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen.AEAgnaScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen.AEAgnaViewModel
+import com.swaminarayan.shikshapatriApp.presentation.screens.aeGoalScreen.AEGoalScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.agnaForm.DailyAgnaFormScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.allAgnaScreen.AllAgnaScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.goalsScreen.GoalsScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.homeScreen.HomeScreen
 import com.swaminarayan.shikshapatriApp.ui.theme.ShikshapatriTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -48,6 +62,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
+                    /*
+                    *  TODO -> AEAgnaScreen Toast mate UiSharedState baki che set-up mate.
+                    *
+                    *  // TODO -> change processedAgnass to dailyReport Type and let remainingAgnas be Agna type,
+                    *
+                    *  TODO -> make another model class of agna in which every parameters of agna will be there and one
+                    *   more field of agnaPalay: Boolean for background color and change the type of processedAgnas to
+                    *   that new data class and at final save use this list of new data class to save DailyAgnaFormReport table.
+                    *
+                    * Todo -> add rajipo score live updates under top bar of agnaForm screen.
+                    *
+                    *  TODO -> if dateTime in dailyReport class is 0 then don't show that report on that day is not saved.
+                    *
+                    * */
+
                     Shikshapatri()
                 }
             }
@@ -56,6 +86,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Shikshapatri() {
@@ -73,10 +104,10 @@ fun Shikshapatri() {
                         .height(150.dp)
                         .background(MaterialTheme.colorScheme.primary),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
 
-                    CircularImage(image = R.drawable.maharaj1)
+                    CircularImage(image = R.drawable.maharaj1, size = 120.dp)
                     Text(
                         text = "Shikshapatri",
                         color = MaterialTheme.colorScheme.background,
@@ -99,14 +130,36 @@ fun Shikshapatri() {
             startDestination = Screens.HomeScreen.route
         ) {
             composable(Screens.HomeScreen.route) {
-                HomeScreen()
+                HomeScreen(navController, drawerState)
+            }
+
+            composable(Screens.AllAgnaScreen.route) {
+                AllAgnaScreen(drawerState, navController)
             }
 
             composable(
                 Screens.AEAgnaScreen.route,
-                arguments = listOf(navArgument(AGNAID) { type = NavType.LongType })
+                arguments = listOf(navArgument(AGNA_ID) { type = NavType.LongType })
             ) {
-                AEAgnaScreen()
+                val vm = viewModel<AEAgnaViewModel>()
+                val agnaId = it.arguments?.getLong(AGNA_ID, -1L) ?: -1L
+                AEAgnaScreen(agnaId, navController, vm)
+            }
+
+            composable(Screens.GoalsScreen.route) {
+                GoalsScreen(drawerState, navController)
+            }
+
+            composable(Screens.GoalsScreen.route) {
+                DailyAgnaFormScreen(navController)
+            }
+
+            composable(
+                Screens.AEGoalsScreen.route,
+                arguments = listOf(navArgument(GOAL_ID) { type = NavType.LongType })
+            ) {
+                val goalId = it.arguments?.getLong(GOAL_ID, -1L) ?: -1L
+                AEGoalScreen(goalId, navController)
             }
         }
 
@@ -114,6 +167,7 @@ fun Shikshapatri() {
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
