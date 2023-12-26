@@ -2,62 +2,54 @@ package com.swaminarayan.shikshapatriApp.presentation
 
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
-import com.swaminarayan.shikshapatriApp.constants.GOAL_ID
-import com.swaminarayan.shikshapatriApp.constants.NOTES_ID
+import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 
 sealed class Screens(
     val title: String,
     val filledIcon: Int,
     val outlinedIcon: Int,
-    val route: String,
+    val route: String
 ) {
     object HomeScreen: Screens(
         title = "Home Screen",
-        filledIcon = R.drawable.maharaj1,
-        outlinedIcon = R.drawable.maharaj1,
+        filledIcon = R.drawable.filled_home_icon,
+        outlinedIcon = R.drawable.outlined_home_icon,
         route = "home_screen"
     )
 
     object AllAgnaScreen: Screens(
         title = "All Agnas",
-        filledIcon = R.drawable.maharaj1,
-        outlinedIcon = R.drawable.maharaj1,
+        filledIcon = R.drawable.filled_all_agna_icon,
+        outlinedIcon = R.drawable.outlined_all_agna_icon,
         route = "all_agnas_screen"
     )
 
     object AEAgnaScreen: Screens(
-        title = "Add Edit Agna",
-        filledIcon = R.drawable.maharaj1,
-        outlinedIcon = R.drawable.maharaj1,
+        title = "Add Agna",
+        filledIcon = R.drawable.add_icon,
+        outlinedIcon = R.drawable.add_icon,
         route = "add_edit_agna_screen/{$AGNA_ID}"
     )
 
     object ReportScreen: Screens(
         title = "Reports",
-        filledIcon = R.drawable.maharaj1,
-        outlinedIcon = R.drawable.maharaj1,
+        filledIcon = R.drawable.filled_report_icon,
+        outlinedIcon = R.drawable.outlined_report_icon,
         route = "report_screen"
     )
 
-    object GoalsScreen: Screens(
-        title = "Goals",
-        filledIcon = R.drawable.maharaj1,
-        outlinedIcon = R.drawable.maharaj1,
-        route = "goals_screen"
-    )
-
-    object AEGoalsScreen: Screens(
-        title = "Add Edit Goal",
+    object SingleDayReportScreen: Screens(
+        title = "Daily Report",
         filledIcon = 0,
         outlinedIcon = 0,
-        route = "add_edit_goals_screen/{$GOAL_ID}"
+        route = "single_day_report_screen/{$FORM_ID}"
     )
 
-    object AgnaFormScreen: Screens(
+    object DailyFormScreen: Screens(
         title = "Agna Form",
         filledIcon = 0,
         outlinedIcon = 0,
-        route = "agna_form_screen"
+        route = "daily_form_screen/{$FORM_ID}"
     )
 
 

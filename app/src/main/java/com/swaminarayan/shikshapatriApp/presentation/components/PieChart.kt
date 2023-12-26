@@ -1,0 +1,232 @@
+package com.swaminarayan.shikshapatriApp.presentation.components
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.swaminarayan.shikshapatriApp.R
+import com.swaminarayan.shikshapatriApp.domain.models.PieChartInput
+import com.swaminarayan.shikshapatriApp.ui.theme.Green
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun PieChart(
+    list: List<PieChartInput>,
+    radius: Float = 500f,
+    innerRadius: Float = 250f,
+    transparentWidth: Float = 60f,
+    spaceBetween: Dp = 30.dp,
+    animationDuration: Int = 1000
+) {
+
+    var circleCenter by remember {
+        mutableStateOf(Offset.Zero)
+    }
+
+    var animationPlayed by remember {
+        mutableStateOf(false)
+    }
+
+    val animateSize by animateFloatAsState(
+        targetValue = if (animationPlayed) 90f * 2f else 0f,
+        animationSpec = tween(
+            durationMillis = animationDuration,
+            delayMillis = 0,
+            easing = LinearOutSlowInEasing
+        ), label = ""
+    )
+
+    val animateRotation by animateFloatAsState(
+        targetValue = if (animationPlayed) 90f * 11f else 0f,
+        animationSpec = tween(
+            durationMillis = animationDuration,
+            delayMillis = 0,
+            easing = LinearOutSlowInEasing
+        ), label = ""
+    )
+
+    LaunchedEffect(key1 = true) {
+        animationPlayed = true
+    }
+
+    Column {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 70.dp)
+                .size(animateSize.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .rotate(animateRotation)
+            ) {
+
+                val width = size.width
+                val height = size.height
+                circleCenter = Offset(x = width / 2f, y = height / 2f)
+
+                val totalValue = list.sumOf { it.value }
+                val anglePerValue = 360f / totalValue
+                var currentStartAngle = 0f
+
+                list.forEach { item ->
+                    val angleToDraw = item.value * anglePerValue
+                    scale(0.9f) {
+                        drawArc(
+                            color = item.color,
+                            startAngle = currentStartAngle,
+                            sweepAngle = angleToDraw,
+                            useCenter = true,
+                            size = Size(
+                                width = radius * 2f,
+                                height = radius * 2f
+                            ),
+                            topLeft = Offset(
+                                (width - radius * 2f) / 2f,
+                                (height - radius * 2f) / 2f
+                            )
+                        )
+                        currentStartAngle += angleToDraw
+                    }
+                    var rotateAngle = currentStartAngle - angleToDraw / 2f - 90f
+                    var factor = 1f
+                    if (rotateAngle > 90f) {
+                        rotateAngle = (rotateAngle + 180) % 360
+                        factor = -0.92f
+                    }
+
+                    val percentage = (item.value / totalValue.toFloat() * 100).toInt()
+                    drawContext.canvas.nativeCanvas.apply {
+                        if (percentage > 3) {
+                            rotate(rotateAngle) {
+                                drawText(
+                                    "$percentage %",
+                                    circleCenter.x,
+                                    circleCenter.y + (radius - (radius - innerRadius) / 2f) * factor,
+                                    android.graphics.Paint().apply {
+                                        textSize = 15.sp.toPx()
+                                        textAlign = android.graphics.Paint.Align.CENTER
+                                        color = Color.White.toArgb()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                drawCircle(
+                    color = Color.White.copy(0.4f),
+                    radius = innerRadius + transparentWidth / 2,
+                )
+
+            }
+
+            Image(
+                painter = painterResource(id = R.drawable.maharaj1),
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(animateSize.dp)
+                    .border(5.dp, Color.White, shape = CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spaceBetween))
+
+    }
+}
+
+@Composable
+fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int) {
+
+    var circleCenter by remember {
+        mutableStateOf(Offset.Zero)
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Canvas(modifier = Modifier.size(50.dp)) {
+
+            val width = size.width
+            val height = size.height
+            circleCenter = Offset(x = width / 2f, y = height / 2f)
+
+            val totalValue = pieChartList.sumOf { it.value }
+            val anglePerValue = 360f / totalValue
+            var currentStartAngle = 0f
+
+            pieChartList.forEach { item ->
+                val angleToDraw = item.value * anglePerValue
+                scale(0.6f) {
+                    drawArc(
+                        color = item.color,
+                        startAngle = currentStartAngle,
+                        sweepAngle = angleToDraw,
+                        useCenter = true,
+                        size = Size(
+                            width = 100f * 2f,
+                            height = 100f * 2f
+                        ),
+                        topLeft = Offset(
+                            (width - 100f * 2f) / 2f,
+                            (height - 100f * 2f) / 2f
+                        )
+                    )
+                    currentStartAngle += angleToDraw
+                }
+            }
+
+            drawCircle(
+                color = Color.White,
+                radius = 30f,
+            )
+
+        }
+
+        Text(
+            text = "$percentage %",
+            color = Green,
+            fontSize = 15.sp
+        )
+
+    }
+
+}

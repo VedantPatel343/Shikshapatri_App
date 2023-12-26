@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun Page(
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         Modifier

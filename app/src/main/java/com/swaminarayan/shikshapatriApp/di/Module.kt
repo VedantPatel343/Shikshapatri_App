@@ -4,8 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.swaminarayan.shikshapatriApp.data.DB
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
-import com.swaminarayan.shikshapatriApp.data.repository.DailyReportRepo
-import com.swaminarayan.shikshapatriApp.data.repository.GoalsRepo
+import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,16 +33,8 @@ object Module {
 
     @Provides
     @Singleton
-    fun getGoalsRepo(db: DB) : GoalsRepo {
-        return GoalsRepo(db.goalsDAO)
+    fun getDailyAgnaFormReportRepo(db: DB) : DailyFormRepo {
+        return DailyFormRepo(db.dailyFormDAO)
     }
-
-    @Provides
-    @Singleton
-    fun getDailyReportRepo(db: DB) : DailyReportRepo {
-        return DailyReportRepo(db.dailyReportDAO)
-    }
-
-
 
 }

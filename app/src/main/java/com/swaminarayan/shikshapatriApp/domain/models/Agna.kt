@@ -11,7 +11,7 @@ data class Agna(
     val description: String,
     val author: String,
     val slokNo: Int,
-    val points: Int,
+    val rajipoPoints: Int,
     val alwaysPalayChe: Boolean,
     val isStared: Boolean
 )

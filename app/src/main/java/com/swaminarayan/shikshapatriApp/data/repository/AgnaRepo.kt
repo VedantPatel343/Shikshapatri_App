@@ -1,5 +1,6 @@
 package com.swaminarayan.shikshapatriApp.data.repository
 
+import android.util.Log
 import com.swaminarayan.shikshapatriApp.data.data_source.AgnaDAO
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +11,10 @@ class AgnaRepo(
 
     fun getAgnas(): Flow<List<Agna>> {
         return dao.getAgnas()
+    }
+
+    suspend fun agnas(): List<Agna> {
+        return dao.agnas()
     }
 
     suspend fun getAgnaById(id: Long): Agna {

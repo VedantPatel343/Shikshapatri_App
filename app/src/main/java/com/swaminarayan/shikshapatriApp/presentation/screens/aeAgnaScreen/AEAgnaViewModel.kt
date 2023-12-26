@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
-import com.swaminarayan.shikshapatriApp.utils.UiEvents
-import com.swaminarayan.shikshapatriApp.utils.checkInt
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
+import com.swaminarayan.shikshapatriApp.utils.UiEvents
+import com.swaminarayan.shikshapatriApp.utils.checkInt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +24,8 @@ class AEAgnaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _points = MutableStateFlow("")
-    val points = _points.map { it }.stateIn(
+    private val _rajipoPoints = MutableStateFlow("")
+    val rajipoPoints = _rajipoPoints.map { it }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         ""
@@ -74,6 +74,18 @@ class AEAgnaViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         false
     )
+    private val _rajipoPointsError = MutableStateFlow(false)
+    val rajipoPointsError = _rajipoPointsError.map { it }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
+    private val _authorError = MutableStateFlow(false)
+    val authorError = _authorError.map { it }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
 
     private val _uiEventFlow = MutableSharedFlow<UiEvents>()
     val uiEventFlow = _uiEventFlow.asSharedFlow()
@@ -90,7 +102,7 @@ class AEAgnaViewModel @Inject constructor(
                     _des.value = agna.description
                     _author.value = agna.author
                     _slokNo.value = agna.slokNo.toString()
-                    _points.value = agna.points.toString()
+                    _rajipoPoints.value = agna.rajipoPoints.toString()
                     _isStared.value = agna.isStared
                     _alwaysPalayChe.value = agna.alwaysPalayChe
                 }
@@ -112,6 +124,7 @@ class AEAgnaViewModel @Inject constructor(
 
             is AEAgnaEvents.OnAuthorChange -> {
                 _author.value = event.author
+                _authorError.value = false
             }
 
             is AEAgnaEvents.OnSlokNoChange -> {
@@ -134,8 +147,10 @@ class AEAgnaViewModel @Inject constructor(
                     try {
                         val isValid = checkInt(event.points)
                         if (isValid || event.points == "") {
-                            _points.value = event.points
+                            _rajipoPoints.value = event.points
+                            _rajipoPointsError.value = false
                         } else {
+                            _rajipoPointsError.value = true
                             _uiEventFlow.emit(UiEvents.ShowToast("Invalid Character."))
                         }
                     } catch (e: Exception) {
@@ -154,10 +169,23 @@ class AEAgnaViewModel @Inject constructor(
 
             is AEAgnaEvents.OnSaveAgna -> {
 
-                when (_agna.value) {
-                    "" -> {
+                when {
+                    _agna.value == "" -> {
                         viewModelScope.launch {
+                            _agnaError.value = true
                             _uiEventFlow.emit(UiEvents.ShowToast("Agna can not be empty."))
+                        }
+                    }
+                    _author.value == "" -> {
+                        viewModelScope.launch {
+                            _authorError.value = true
+                            _uiEventFlow.emit(UiEvents.ShowToast("Author can not be empty."))
+                        }
+                    }
+                    _rajipoPoints.value == "" -> {
+                        viewModelScope.launch {
+                            _rajipoPointsError.value = true
+                            _uiEventFlow.emit(UiEvents.ShowToast("Rajipo Points can not be empty."))
                         }
                     }
                     else -> {
@@ -168,7 +196,7 @@ class AEAgnaViewModel @Inject constructor(
                                 description = des.value,
                                 author = author.value,
                                 slokNo = if (slokNo.value.isEmpty()) 0 else slokNo.value.toInt(),
-                                points = if (points.value.isEmpty()) 0 else points.value.toInt(),
+                                rajipoPoints = rajipoPoints.value.toInt(),
                                 isStared = isStared.value,
                                 alwaysPalayChe = alwaysPalayChe.value
                             )
@@ -184,7 +212,7 @@ class AEAgnaViewModel @Inject constructor(
                                 description = des.value,
                                 author = author.value,
                                 slokNo = if (slokNo.value.isEmpty()) 0 else slokNo.value.toInt(),
-                                points = if (points.value.isEmpty()) 0 else points.value.toInt(),
+                                rajipoPoints = rajipoPoints.value.toInt(),
                                 isStared = isStared.value,
                                 alwaysPalayChe = alwaysPalayChe.value
                             )

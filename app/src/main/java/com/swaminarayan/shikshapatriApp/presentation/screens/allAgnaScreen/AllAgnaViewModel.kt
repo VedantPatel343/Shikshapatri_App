@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
+import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -27,6 +30,9 @@ class AllAgnaViewModel @Inject constructor(
         emptyList()
     )
 
+    private val _uiEventFlow = MutableSharedFlow<UiEvents>()
+    val uiEventFlow = _uiEventFlow.asSharedFlow()
+
     private var getAgnasJob: Job? = null
 
     init {
@@ -43,6 +49,7 @@ class AllAgnaViewModel @Inject constructor(
     fun deleteAgna(agna: Agna) {
         viewModelScope.launch {
             repo.deleteAgna(agna)
+            _uiEventFlow.emit(UiEvents.ShowToast("Agna deleted."))
         }
     }
 
@@ -53,7 +60,7 @@ class AllAgnaViewModel @Inject constructor(
             description = agna.description,
             author = agna.author,
             slokNo = agna.slokNo,
-            points = agna.points,
+            rajipoPoints = agna.rajipoPoints,
             alwaysPalayChe = agna.alwaysPalayChe,
             isStared = !agna.isStared
         )

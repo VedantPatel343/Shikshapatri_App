@@ -10,8 +10,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AgnaDAO {
 
+//    @Query("SELECT * FROM Agna")
     @Query("SELECT * FROM Agna ORDER BY id ASC")
     fun getAgnas(): Flow<List<Agna>>
+
+    @Query("SELECT * FROM Agna ORDER BY id ASC")
+    suspend fun agnas(): List<Agna>
 
     @Query("SELECT * FROM Agna WHERE id = :id")
     suspend fun getAgnaById(id: Long): Agna

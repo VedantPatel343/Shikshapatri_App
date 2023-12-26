@@ -41,7 +41,7 @@ fun ConfirmMessage(
                 )
                 .background(bgColor)
         ) {
-            Text(text = titleText, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 5.dp))
+            Text(text = titleText, color = Color.Red, modifier = Modifier.padding(top = 5.dp))
             OutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -52,12 +52,12 @@ fun ConfirmMessage(
                 onClick = {
                     onButtonClick()
                 },
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                border = BorderStroke(1.dp, Color.Red)
             ) {
-                Text(text = buttonText, color = MaterialTheme.colorScheme.error)
+                Text(text = buttonText, color = Color.Red)
+                Spacer(modifier = Modifier.height(3.dp))
             }
-            Spacer(modifier = Modifier.height(3.dp))
         }
-    }
 
+    }
 }

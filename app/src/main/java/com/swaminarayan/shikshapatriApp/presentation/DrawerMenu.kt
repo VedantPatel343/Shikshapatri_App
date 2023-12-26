@@ -37,8 +37,7 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
         Screens.HomeScreen,
         Screens.AllAgnaScreen,
         Screens.AEAgnaScreen,
-        Screens.ReportScreen,
-        Screens.GoalsScreen
+        Screens.ReportScreen
     )
 
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -111,11 +110,11 @@ fun DrawerMenuItem(
         },
         colors = NavigationDrawerItemDefaults.colors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
-            unselectedContainerColor = MaterialTheme.colorScheme.background,
             selectedIconColor = MaterialTheme.colorScheme.background,
             selectedTextColor = MaterialTheme.colorScheme.background,
-            unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
-            unselectedIconColor = MaterialTheme.colorScheme.onSecondary
+            unselectedContainerColor = MaterialTheme.colorScheme.background,
+//            unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
+//            unselectedIconColor = MaterialTheme.colorScheme.onSecondary
         ),
         modifier = Modifier.padding(bottom = 10.dp)
     )

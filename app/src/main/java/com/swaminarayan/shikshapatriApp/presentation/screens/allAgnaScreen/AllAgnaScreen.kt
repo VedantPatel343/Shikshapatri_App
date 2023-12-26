@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +49,9 @@ import com.swaminarayan.shikshapatriApp.presentation.components.BasicButton
 import com.swaminarayan.shikshapatriApp.presentation.components.ConfirmMessage
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.presentation.components.TopBar
+import com.swaminarayan.shikshapatriApp.utils.UiEvents
+import com.swaminarayan.shikshapatriApp.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,60 +62,19 @@ fun AllAgnaScreen(
     vm: AllAgnaViewModel = hiltViewModel()
 ) {
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val agnas by vm.agnas.collectAsStateWithLifecycle()
-    val list = listOf(
-        Agna(
-            1,
-            "Roj Chesta jovi.",
-            "Description",
-            "Guruji",
-            slokNo = 0,
-            points = 100,
-            alwaysPalayChe = false,
-            isStared = false
-        ),
-        Agna(
-            2,
-            "Roj Mangla karvi.",
-            "Description",
-            "Guruji",
-            slokNo = 0,
-            points = 100,
-            alwaysPalayChe = false,
-            isStared = false
-        ),
-        Agna(
-            3,
-            "Roj Katha jovi.",
-            "Description",
-            "Guruji",
-            slokNo = 0,
-            points = 100,
-            alwaysPalayChe = false,
-            isStared = false
-        ),
-        Agna(
-            4,
-            "Roj Til Chin jova.",
-            "Description",
-            "Guruji",
-            slokNo = 0,
-            points = 100,
-            alwaysPalayChe = false,
-            isStared = false
-        ),
-        Agna(
-            5,
-            "Bhrambhave hari nu smaran karvu.",
-            "Description",
-            "Guruji",
-            slokNo = 0,
-            points = 100,
-            alwaysPalayChe = false,
-            isStared = false
-        )
-    )
+
+    LaunchedEffect(key1 = true) {
+        vm.uiEventFlow.collectLatest {
+            when (it) {
+                is UiEvents.ShowToast -> {
+                    showToast(context = context, message = it.message, isLenShort = it.isLenShort)
+                }
+            }
+        }
+    }
 
     Page {
         TopBar(
@@ -165,12 +129,16 @@ fun AgnaItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(top = 10.dp, start = 10.dp, end = 10.dp),
         elevation = CardDefaults.cardElevation(2.5.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
     ) {
 
-        Column(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -182,7 +150,7 @@ fun AgnaItem(
                 ) {
 
                     Text(
-                        text = "Agna - ${agna.agna}",
+                        text = agna.agna,
                         fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.onSecondary
                     )
@@ -241,9 +209,6 @@ fun AgnaItem(
             AnimatedVisibility(visible = dIsDesVisible) {
                 Column(Modifier.fillMaxWidth()) {
 
-                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.height(10.dp))
-
                     Text(
                         text = "Des - ${agna.description}",
                         fontSize = 18.sp,
@@ -258,7 +223,7 @@ fun AgnaItem(
                     )
 
                     Text(
-                        text = "Rajipo Points - ${agna.points}",
+                        text = "Rajipo Points - ${agna.rajipoPoints}",
                         modifier = Modifier.padding(top = 10.dp),
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onSecondary
@@ -271,7 +236,8 @@ fun AgnaItem(
                         color = MaterialTheme.colorScheme.onSecondary
                     )
 
-                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Divider(color = MaterialTheme.colorScheme.onSecondary)
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Row(
@@ -288,7 +254,7 @@ fun AgnaItem(
                                 onEditBtnClicked()
                                 isDesVisible = false
                             },
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSecondary
                         )
                         BasicButton(
                             modifier = Modifier
@@ -296,7 +262,7 @@ fun AgnaItem(
                                 .padding(horizontal = 10.dp),
                             text = "Delete",
                             onButtonClicked = { isDelMessageVisible = !isDelMessageVisible },
-                            color = MaterialTheme.colorScheme.error
+                            color = Color.Red
                         )
                     }
                 }

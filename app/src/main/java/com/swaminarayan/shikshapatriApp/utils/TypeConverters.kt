@@ -4,26 +4,30 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.room.TypeConverter
 import com.google.gson.Gson
-import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnas
-import java.time.LocalDateTime
+import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import java.time.LocalDate
 
-class LocalDateTimeConverter {
+class LocalDateConverter {
     @TypeConverter
-    fun timeToString(time: LocalDateTime): String {
+    fun timeToString(time: LocalDate): String {
         return time.toString()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
-    fun stringToTime(string: String): LocalDateTime {
-        return LocalDateTime.parse(string)
+    fun stringToTime(string: String): LocalDate {
+        return LocalDate.parse(string)
     }
 }
 
-class DailyScoreListConverter {
+class DailyAgnaListConverter {
     @TypeConverter
-    fun listToJson(value: List<DailyAgnas>): String = Gson().toJson(value)
+    fun listToJson(value: List<DailyAgna>): String {
+        return Gson().toJson(value)
+    }
 
     @TypeConverter
-    fun jsonToList(string: String) = Gson().fromJson(string, Array<DailyAgnas>::class.java).toList()
+    fun jsonToList(string: String) : List<DailyAgna> {
+        return Gson().fromJson(string, Array<DailyAgna>::class.java).toList()
+    }
 }

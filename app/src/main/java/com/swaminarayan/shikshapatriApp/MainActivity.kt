@@ -27,24 +27,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
-import com.swaminarayan.shikshapatriApp.constants.GOAL_ID
+import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.presentation.DrawerMenu
 import com.swaminarayan.shikshapatriApp.presentation.Screens
 import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
 import com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen.AEAgnaScreen
-import com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen.AEAgnaViewModel
-import com.swaminarayan.shikshapatriApp.presentation.screens.aeGoalScreen.AEGoalScreen
-import com.swaminarayan.shikshapatriApp.presentation.screens.agnaForm.DailyAgnaFormScreen
 import com.swaminarayan.shikshapatriApp.presentation.screens.allAgnaScreen.AllAgnaScreen
-import com.swaminarayan.shikshapatriApp.presentation.screens.goalsScreen.GoalsScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.dailyForm.DailyFormScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.dailyReportScreen.SingleDayReportScreen
 import com.swaminarayan.shikshapatriApp.presentation.screens.homeScreen.HomeScreen
+import com.swaminarayan.shikshapatriApp.presentation.screens.reportScreen.ReportScreen
 import com.swaminarayan.shikshapatriApp.ui.theme.ShikshapatriTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -62,22 +60,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
-                    /*
-                    *  TODO -> AEAgnaScreen Toast mate UiSharedState baki che set-up mate.
-                    *
-                    *  // TODO -> change processedAgnass to dailyReport Type and let remainingAgnas be Agna type,
-                    *
-                    *  TODO -> make another model class of agna in which every parameters of agna will be there and one
-                    *   more field of agnaPalay: Boolean for background color and change the type of processedAgnas to
-                    *   that new data class and at final save use this list of new data class to save DailyAgnaFormReport table.
-                    *
-                    * Todo -> add rajipo score live updates under top bar of agnaForm screen.
-                    *
-                    *  TODO -> if dateTime in dailyReport class is 0 then don't show that report on that day is not saved.
-                    *
-                    * */
-
                     Shikshapatri()
                 }
             }
@@ -96,6 +78,7 @@ fun Shikshapatri() {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             ModalDrawerSheet {
                 Row(
@@ -141,26 +124,28 @@ fun Shikshapatri() {
                 Screens.AEAgnaScreen.route,
                 arguments = listOf(navArgument(AGNA_ID) { type = NavType.LongType })
             ) {
-                val vm = viewModel<AEAgnaViewModel>()
                 val agnaId = it.arguments?.getLong(AGNA_ID, -1L) ?: -1L
-                AEAgnaScreen(agnaId, navController, vm)
-            }
-
-            composable(Screens.GoalsScreen.route) {
-                GoalsScreen(drawerState, navController)
-            }
-
-            composable(Screens.GoalsScreen.route) {
-                DailyAgnaFormScreen(navController)
+                AEAgnaScreen(agnaId, navController)
             }
 
             composable(
-                Screens.AEGoalsScreen.route,
-                arguments = listOf(navArgument(GOAL_ID) { type = NavType.LongType })
+                Screens.DailyFormScreen.route,
+                arguments = listOf(navArgument(FORM_ID) { type = NavType.LongType })
             ) {
-                val goalId = it.arguments?.getLong(GOAL_ID, -1L) ?: -1L
-                AEGoalScreen(goalId, navController)
+                DailyFormScreen(navController)
             }
+
+            composable(Screens.ReportScreen.route) {
+                ReportScreen(drawerState, navController)
+            }
+
+            composable(
+                Screens.SingleDayReportScreen.route,
+                arguments = listOf(navArgument(FORM_ID) { type = NavType.LongType })
+            ) {
+                SingleDayReportScreen(navController)
+            }
+
         }
 
     }
