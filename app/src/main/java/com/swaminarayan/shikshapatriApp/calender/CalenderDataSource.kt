@@ -2,6 +2,7 @@ package com.swaminarayan.shikshapatriApp.calender
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.stream.Collectors
@@ -10,11 +11,9 @@ import java.util.stream.Stream
 @RequiresApi(Build.VERSION_CODES.O)
 class CalenderDataSource {
 
-    private val today: LocalDate = LocalDate.now()
-
-    fun getVisibleDates(startDateTime: LocalDate = today): List<LocalDate> {
-        val lastDayOfWeek = startDateTime.plusDays(7)
-        return getDatesBetween(startDateTime.minusDays(1), lastDayOfWeek)
+    fun getVisibleDates(startDate: LocalDate): List<LocalDate> {
+        val lastDayOfWeek = startDate.plusDays(7)
+        return getDatesBetween(startDate, lastDayOfWeek)
     }
 
     private fun getDatesBetween(

@@ -14,7 +14,7 @@ interface DailyFormDAO {
     @Query("SELECT * FROM DailyForm")
     fun getDailyReports(): Flow<List<DailyForm>>
 
-    @Query("SELECT * FROM DailyForm")
+    @Query("SELECT * FROM DailyForm ORDER BY date ASC")
     suspend fun dailyFormList(): List<DailyForm>
 
     @Query("SELECT * FROM DailyForm WHERE id = :id")

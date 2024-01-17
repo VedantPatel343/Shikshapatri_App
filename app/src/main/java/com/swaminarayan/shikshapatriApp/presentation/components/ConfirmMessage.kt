@@ -25,8 +25,7 @@ fun ConfirmMessage(
     isMessageVisible: Boolean,
     onButtonClick: () -> Unit,
     titleText: String,
-    buttonText: String,
-    bgColor: Color = MaterialTheme.colorScheme.secondary
+    buttonText: String
 ) {
 
     AnimatedVisibility(visible = isMessageVisible) {
@@ -35,11 +34,6 @@ fun ConfirmMessage(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(
-                    elevation = 1.dp,
-                    shape = RoundedCornerShape(5.dp)
-                )
-                .background(bgColor)
         ) {
             Text(text = titleText, color = Color.Red, modifier = Modifier.padding(top = 5.dp))
             OutlinedButton(

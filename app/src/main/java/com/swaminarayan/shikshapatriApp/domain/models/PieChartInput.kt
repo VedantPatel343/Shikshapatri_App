@@ -4,6 +4,6 @@ import androidx.compose.ui.graphics.Color
 
 data class PieChartInput(
     val color: Color,
-    val value: Int,
+    val value: Long,
     val des: String = ""
 )

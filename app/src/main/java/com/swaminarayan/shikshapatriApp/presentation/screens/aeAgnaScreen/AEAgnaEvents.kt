@@ -8,7 +8,6 @@ sealed class AEAgnaEvents {
     data class OnSlokNoChange(val slokNo: String): AEAgnaEvents()
     data class OnPointsChange(val points: String): AEAgnaEvents()
     data class OnAlwaysPalayCheChange(val alwaysPalayChe: Boolean): AEAgnaEvents()
-    data class OnIsStaredChange(val isStared: Boolean): AEAgnaEvents()
 
 
     data object OnSaveAgna: AEAgnaEvents()

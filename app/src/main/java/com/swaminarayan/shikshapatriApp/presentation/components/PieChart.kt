@@ -8,20 +8,31 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowLeft
+import androidx.compose.material.icons.filled.ArrowRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,12 +47,15 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swaminarayan.shikshapatriApp.R
+import com.swaminarayan.shikshapatriApp.constants.maharajList
 import com.swaminarayan.shikshapatriApp.domain.models.PieChartInput
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -51,19 +65,40 @@ fun PieChart(
     innerRadius: Float = 250f,
     transparentWidth: Float = 60f,
     spaceBetween: Dp = 30.dp,
-    animationDuration: Int = 1000
+    animationDuration: Int = 800,
+    showArrowBtn: Boolean,
+    onPreviousMonthClicked: () -> Unit,
+    onNextMonthClicked: () -> Unit,
+    currentMonth: String,
+    date15year: String,
+    maharaj1: Int = 0
 ) {
 
     var circleCenter by remember {
         mutableStateOf(Offset.Zero)
     }
 
-    var animationPlayed by remember {
+    var maharaj by rememberSaveable {
+        mutableIntStateOf(maharajList.random().image)
+    }
+
+    val scope = rememberCoroutineScope()
+
+    var animationPlayed by rememberSaveable {
         mutableStateOf(false)
     }
 
     val animateSize by animateFloatAsState(
         targetValue = if (animationPlayed) 90f * 2f else 0f,
+        animationSpec = tween(
+            durationMillis = animationDuration,
+            delayMillis = 0,
+            easing = LinearOutSlowInEasing
+        ), label = ""
+    )
+
+    val space by animateFloatAsState(
+        targetValue = if (!animationPlayed) 90f else 0f,
         animationSpec = tween(
             durationMillis = animationDuration,
             delayMillis = 0,
@@ -85,6 +120,55 @@ fun PieChart(
     }
 
     Column {
+
+        if (showArrowBtn) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        onPreviousMonthClicked()
+                        scope.launch {
+                            animationPlayed = false
+                            delay(600)
+                            maharaj = maharajList.random().image
+                            animationPlayed = true
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowLeft,
+                        contentDescription = "Left arrow key"
+                    )
+                }
+                Text(
+                    text = "$currentMonth $date15year",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(
+                    onClick = {
+                        onNextMonthClicked()
+                        scope.launch {
+                            animationPlayed = false
+                            delay(600)
+                            maharaj = maharajList.random().image
+                            animationPlayed = true
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowRight,
+                        contentDescription = "Right arrow key"
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(space.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         Box(
             modifier = Modifier
@@ -160,7 +244,7 @@ fun PieChart(
             }
 
             Image(
-                painter = painterResource(id = R.drawable.maharaj1),
+                painter = painterResource(id = maharaj),
                 contentDescription = null,
                 modifier = Modifier
                     .clip(CircleShape)
@@ -171,6 +255,7 @@ fun PieChart(
         }
 
         Spacer(modifier = Modifier.height(spaceBetween))
+        Spacer(modifier = Modifier.height(space.dp))
 
     }
 }

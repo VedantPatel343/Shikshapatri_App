@@ -31,7 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.utils.dayFormatter
 import java.time.LocalDate
 
@@ -40,11 +40,12 @@ import java.time.LocalDate
 @Composable
 fun Calender(
     visibleDateList: List<LocalDate>,
-    startEndDate: String,
+    centerText: String,
     onDateClicked: (LocalDate) -> Unit,
     onNextClick: () -> Unit,
     onPreviousClick: () -> Unit,
-    showPrevNextBtn: Boolean
+    showPrevNextBtn: Boolean,
+    showTickMarks: (LocalDate) -> Boolean
 ) {
 
     Column {
@@ -62,12 +63,21 @@ fun Calender(
                     )
                 }
 
-                Text(text = startEndDate)
+                Text(text = centerText)
 
-                IconButton(onClick = { onNextClick() }) {
+                if (visibleDateList.last() < LocalDate.now()) {
+                    IconButton(onClick = { onNextClick() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowRight,
+                            contentDescription = "Right arrow key"
+                        )
+                    }
+                } else {
                     Icon(
+                        modifier = Modifier.padding(end = 20.dp),
                         imageVector = Icons.Default.ArrowRight,
-                        contentDescription = "Right arrow key"
+                        contentDescription = "Right arrow key",
+                        tint = MaterialTheme.colorScheme.background
                     )
                 }
 
@@ -83,12 +93,12 @@ fun Calender(
                     onDateClicked = {
                         onDateClicked(date)
                     },
-                    today = LocalDate.now()
+                    today = LocalDate.now(),
+                    showTickMarks = showTickMarks(date)
                 )
             }
         }
     }
-
 
 }
 
@@ -97,56 +107,89 @@ fun Calender(
 fun CalenderItem(
     date: LocalDate,
     onDateClicked: () -> Unit,
-    today: LocalDate
+    today: LocalDate,
+    showTickMarks: Boolean
 ) {
 
-    val textColor = if (date == today) {
-        MaterialTheme.colorScheme.onPrimary
+    val textColor = if (showTickMarks) {
+        if (date == today) {
+            Color.White
+        } else {
+            Green
+        }
+    } else if (date > LocalDate.now()) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
     } else {
-        MaterialTheme.colorScheme.primary
+        if (date == today) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
     }
 
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .padding(horizontal = 5.dp)
-            .background(
-                if (date == today) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = CircleShape
-            )
-            .border(
-                2.5.dp,
-                MaterialTheme.colorScheme.primary,
-                CircleShape
-            )
-            .clickable {
-                onDateClicked()
-            },
-        contentAlignment = Alignment.Center
-    ) {
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .size(70.dp)
-                .padding(10.dp)
-        ) {
-            Text(
-                text = dayFormatter(date),
-                color = textColor,
-                fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = date.dayOfMonth.toString(),
-                color = textColor,
-                fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Bold
-            )
+    val backgroundColor =
+        if (date == today) {
+            if (showTickMarks) {
+                Green
+            } else {
+                MaterialTheme.colorScheme.primary
+            }
+        } else {
+            Color.Transparent
         }
 
+    val borderColor =
+        if (showTickMarks) {
+            Green
+        } else if (date > LocalDate.now()) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+
+    if (date <= LocalDate.now()) {
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable {
+                    onDateClicked()
+                }
+                .padding(horizontal = 5.dp)
+                .background(
+                    backgroundColor,
+                    shape = CircleShape
+                )
+                .border(
+                    2.5.dp,
+                    borderColor,
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .size(70.dp)
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = dayFormatter(date),
+                    color = textColor,
+                    fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = date.dayOfMonth.toString(),
+                    color = textColor,
+                    fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Bold
+                )
+            }
+
+        }
     }
 
 }

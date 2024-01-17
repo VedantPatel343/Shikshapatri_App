@@ -60,12 +60,6 @@ class AEAgnaViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         false
     )
-    private val _isStared = MutableStateFlow(false)
-    val isStared = _isStared.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        false
-    )
 
 
     private val _agnaError = MutableStateFlow(false)
@@ -103,7 +97,6 @@ class AEAgnaViewModel @Inject constructor(
                     _author.value = agna.author
                     _slokNo.value = agna.slokNo.toString()
                     _rajipoPoints.value = agna.rajipoPoints.toString()
-                    _isStared.value = agna.isStared
                     _alwaysPalayChe.value = agna.alwaysPalayChe
                 }
             }
@@ -163,10 +156,6 @@ class AEAgnaViewModel @Inject constructor(
                 _alwaysPalayChe.value = event.alwaysPalayChe
             }
 
-            is AEAgnaEvents.OnIsStaredChange -> {
-                _isStared.value = event.isStared
-            }
-
             is AEAgnaEvents.OnSaveAgna -> {
 
                 when {
@@ -197,7 +186,6 @@ class AEAgnaViewModel @Inject constructor(
                                 author = author.value,
                                 slokNo = if (slokNo.value.isEmpty()) 0 else slokNo.value.toInt(),
                                 rajipoPoints = rajipoPoints.value.toInt(),
-                                isStared = isStared.value,
                                 alwaysPalayChe = alwaysPalayChe.value
                             )
                             viewModelScope.launch {
@@ -213,7 +201,6 @@ class AEAgnaViewModel @Inject constructor(
                                 author = author.value,
                                 slokNo = if (slokNo.value.isEmpty()) 0 else slokNo.value.toInt(),
                                 rajipoPoints = rajipoPoints.value.toInt(),
-                                isStared = isStared.value,
                                 alwaysPalayChe = alwaysPalayChe.value
                             )
                             viewModelScope.launch {

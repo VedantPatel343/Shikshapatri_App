@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
+import com.swaminarayan.shikshapatriApp.domain.usecases.UseCases
 import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -20,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AllAgnaViewModel @Inject constructor(
-    private val repo: AgnaRepo
+    private val repo: AgnaRepo,
+    private val useCases: UseCases
 ) : ViewModel() {
 
     private val _agnas: MutableStateFlow<List<Agna>> = MutableStateFlow(emptyList())
@@ -48,25 +50,8 @@ class AllAgnaViewModel @Inject constructor(
 
     fun deleteAgna(agna: Agna) {
         viewModelScope.launch {
-            repo.deleteAgna(agna)
+            useCases.deleteAgna(agna)
             _uiEventFlow.emit(UiEvents.ShowToast("Agna deleted."))
         }
     }
-
-    fun onStarClicked(agna: Agna) {
-        val agna1 = Agna(
-            id = agna.id,
-            agna = agna.agna,
-            description = agna.description,
-            author = agna.author,
-            slokNo = agna.slokNo,
-            rajipoPoints = agna.rajipoPoints,
-            alwaysPalayChe = agna.alwaysPalayChe,
-            isStared = !agna.isStared
-        )
-        viewModelScope.launch {
-            repo.upsertAgna(agna1)
-        }
-    }
-
 }

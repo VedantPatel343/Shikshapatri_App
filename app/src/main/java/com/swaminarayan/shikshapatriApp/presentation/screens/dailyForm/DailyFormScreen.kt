@@ -1,6 +1,8 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.dailyForm
 
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import com.swaminarayan.shikshapatriApp.presentation.Screens
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.presentation.components.TopBar2Btn
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
@@ -50,6 +54,7 @@ import kotlinx.coroutines.flow.collectLatest
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DailyFormScreen(
@@ -65,6 +70,11 @@ fun DailyFormScreen(
     val liveScore = vm.liveScore
     val date = vm.date
 
+    BackHandler {
+        navController.popBackStack()
+        navController.navigate(Screens.HomeScreen.route)
+    }
+
     LaunchedEffect(key1 = true) {
         vm.uiEventFlow.collectLatest {
             when (it) {
@@ -79,11 +89,15 @@ fun DailyFormScreen(
 
         TopBar2Btn(
             title = "Daily Form",
-            popBackStack = { navController.popBackStack() },
+            popBackStack = {
+                navController.popBackStack()
+                navController.navigate(Screens.HomeScreen.route)
+            },
             onSaveClicked = {
                 vm.onFormFilledClick()
                 if (remainingAgnas.isEmpty()) {
                     navController.popBackStack()
+                    navController.navigate(Screens.HomeScreen.route)
                 }
             }
         )
@@ -106,6 +120,9 @@ fun DailyFormScreen(
             LazyColumn {
 
                 item {
+                    Log.i("listTest", "remaining: ${remainingAgnas.toList()}")
+                    Log.i("listTest", "palai: ${processedPalaiAgnas.toList()}")
+                    Log.i("listTest", "na palai: ${processedNaPalaiAgnas.toList()}")
                     Text(
                         text = "Agnas:",
                         modifier = Modifier
@@ -329,7 +346,7 @@ private fun DailyAgnaItem(
                             )
 
                             Text(
-                                text = "Rajipo Points - ${dailyAgna.points}",
+                                text = "Rajipo Points - ${dailyAgna.rajipoPoints}",
                                 modifier = Modifier.padding(top = 10.dp),
                                 fontSize = 18.sp,
                                 color = textColor

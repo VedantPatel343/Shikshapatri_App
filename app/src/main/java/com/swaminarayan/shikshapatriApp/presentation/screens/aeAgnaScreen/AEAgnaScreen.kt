@@ -64,7 +64,6 @@ fun AEAgnaScreen(
     val slokNo by vm.slokNo.collectAsStateWithLifecycle()
     val points by vm.rajipoPoints.collectAsStateWithLifecycle()
     val alwaysPalayChe by vm.alwaysPalayChe.collectAsStateWithLifecycle()
-    val isStared by vm.isStared.collectAsStateWithLifecycle()
 
     val agnaError by vm.agnaError.collectAsStateWithLifecycle()
     val authorError by vm.authorError.collectAsStateWithLifecycle()
@@ -90,7 +89,6 @@ fun AEAgnaScreen(
                     navController.popBackStack()
                 }
             }
-
         )
 
         Column(
@@ -99,22 +97,6 @@ fun AEAgnaScreen(
                 vertical = 10.dp
             )
         ) {
-
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                IconToggleButton(
-                    checked = isStared,
-                    onCheckedChange = { vm.onEvent(AEAgnaEvents.OnIsStaredChange(it)) },
-                ) {
-                    Icon(
-                        imageVector = if (isStared) Icons.Default.Star else Icons.Default.StarOutline,
-                        contentDescription = null,
-                        tint = if (isStared) Color.Yellow else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(3.dp))
 
             OutlinedTextField(
                 modifier = Modifier

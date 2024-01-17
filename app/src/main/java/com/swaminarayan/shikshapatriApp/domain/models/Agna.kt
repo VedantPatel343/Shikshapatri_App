@@ -13,5 +13,4 @@ data class Agna(
     val slokNo: Int,
     val rajipoPoints: Int,
     val alwaysPalayChe: Boolean,
-    val isStared: Boolean
 )

@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -26,10 +24,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -83,20 +79,18 @@ fun AllAgnaScreen(
             onBtnClick = { scope.launch { drawerState.open() } }
         )
 
+        Spacer(modifier = Modifier.height(10.dp))
+
         LazyColumn {
             items(agnas, key = { it.id }) { agna ->
                 AgnaItem(
                     agna,
-                    onDeleteBtnClicked = {
-                        vm.deleteAgna(agna)
-                    },
                     onEditBtnClicked = {
                         navController.navigate("add_edit_agna_screen/${agna.id}")
-                    },
-                    onStarClicked = {
-                        vm.onStarClicked(agna)
                     }
-                )
+                ) {
+                    vm.deleteAgna(agna)
+                }
             }
         }
 
@@ -107,7 +101,6 @@ fun AllAgnaScreen(
 @Composable
 fun AgnaItem(
     agna: Agna,
-    onStarClicked: () -> Unit,
     onEditBtnClicked: () -> Unit,
     onDeleteBtnClicked: () -> Unit
 ) {
@@ -115,23 +108,17 @@ fun AgnaItem(
     var isDesVisible by rememberSaveable {
         mutableStateOf(false)
     }
-    val dIsDesVisible by remember {
-        derivedStateOf { isDesVisible }
-    }
 
     var isDelMessageVisible by rememberSaveable {
         mutableStateOf(false)
-    }
-    val dIsDelMessageVisible by remember {
-        derivedStateOf { isDelMessageVisible }
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp, start = 10.dp, end = 10.dp),
+            .padding(bottom = 10.dp, start = 10.dp, end = 10.dp),
         elevation = CardDefaults.cardElevation(2.5.dp),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
     ) {
 
         Column(
@@ -151,16 +138,14 @@ fun AgnaItem(
 
                     Text(
                         text = agna.agna,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontSize = 20.sp
                     )
 
                     if (agna.slokNo != 0) {
                         Text(
                             text = "Slok No - ${agna.slokNo}",
                             modifier = Modifier.padding(top = 10.dp),
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSecondary
+                            fontSize = 20.sp
                         )
                     }
 
@@ -172,72 +157,47 @@ fun AgnaItem(
                             }
                         ) {
                             Icon(
-                                painter = if (dIsDesVisible) {
+                                painter = if (isDesVisible) {
                                     painterResource(id = R.drawable.up_arrow_icon)
                                 } else {
                                     painterResource(id = R.drawable.down_arrow_icon)
-                                }, contentDescription = "",
-                                tint = MaterialTheme.colorScheme.onSecondary
+                                }, contentDescription = ""
                             )
                         }
                     }
                 }
 
-                IconButton(
-                    onClick = {
-                        onStarClicked()
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = if (agna.isStared) {
-                            Icons.Default.Star
-                        } else {
-                            Icons.Outlined.Star
-                        }, contentDescription = "",
-                        tint = if (agna.isStared) {
-                            Color.Yellow
-                        } else {
-                            MaterialTheme.colorScheme.onSecondary
-                        }
-                    )
-                }
-
             }
 
 
-            AnimatedVisibility(visible = dIsDesVisible) {
+            AnimatedVisibility(visible = isDesVisible) {
                 Column(Modifier.fillMaxWidth()) {
 
                     Text(
                         text = "Des - ${agna.description}",
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontSize = 18.sp
                     )
 
                     Text(
                         text = "Author - ${agna.author}",
                         modifier = Modifier.padding(top = 10.dp),
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontSize = 18.sp
                     )
 
                     Text(
                         text = "Rajipo Points - ${agna.rajipoPoints}",
                         modifier = Modifier.padding(top = 10.dp),
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontSize = 18.sp
                     )
 
                     Text(
                         text = "Always palay che? - ${if (agna.alwaysPalayChe) "YES" else "NO"}",
                         modifier = Modifier.padding(top = 10.dp),
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontSize = 18.sp
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
-                    Divider(color = MaterialTheme.colorScheme.onSecondary)
+                    Divider()
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Row(
@@ -254,7 +214,7 @@ fun AgnaItem(
                                 onEditBtnClicked()
                                 isDesVisible = false
                             },
-                            color = MaterialTheme.colorScheme.onSecondary
+                            color = Color.Gray
                         )
                         BasicButton(
                             modifier = Modifier
@@ -269,7 +229,7 @@ fun AgnaItem(
             }
 
             ConfirmMessage(
-                isMessageVisible = dIsDelMessageVisible,
+                isMessageVisible = isDelMessageVisible,
                 onButtonClick = {
                     onDeleteBtnClicked()
                     isDelMessageVisible = false

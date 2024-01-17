@@ -17,13 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
 import kotlinx.coroutines.launch
 
 
@@ -37,7 +35,8 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
         Screens.HomeScreen,
         Screens.AllAgnaScreen,
         Screens.AEAgnaScreen,
-        Screens.ReportScreen
+        Screens.ReportScreen,
+        Screens.NoteScreen
     )
 
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -95,7 +94,6 @@ fun DrawerMenuItem(
             Text(
                 text = title,
                 Modifier.padding(start = 10.dp),
-//                fontWeight = FontWeight.Bold
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
             )
         },
@@ -113,8 +111,6 @@ fun DrawerMenuItem(
             selectedIconColor = MaterialTheme.colorScheme.background,
             selectedTextColor = MaterialTheme.colorScheme.background,
             unselectedContainerColor = MaterialTheme.colorScheme.background,
-//            unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
-//            unselectedIconColor = MaterialTheme.colorScheme.onSecondary
         ),
         modifier = Modifier.padding(bottom = 10.dp)
     )
