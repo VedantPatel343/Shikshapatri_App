@@ -222,13 +222,13 @@ private fun NoteItem(
 
                     ConfirmMessage(
                         isMessageVisible = isDelMessageVisible,
-                        onButtonClick = {
+                        onDeleteClick = {
                             onDeleteBtnClicked()
                             isDelMessageVisible = false
                             showToast(context, "Note deleted.", true)
                         },
+                        onCancelClick = { isDelMessageVisible = false },
                         titleText = "Confirm Delete?",
-                        buttonText = "DELETE"
                     )
 
                 }

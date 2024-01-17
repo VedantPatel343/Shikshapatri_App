@@ -92,11 +92,15 @@ class MainActivity : ComponentActivity() {
                     *  Todo -> add paging in reportScreen.
                     *  Todo -> add logic to pop screens from Drawer Menu.
                     *  Todo -> work on splash screen.
-                    *  Todo -> add multiple maharaj in drawable folder.
                     *  Todo -> create widget to fill daily form.
                     *  Todo -> same as deleteAgnaUseCase make upsertAgnaUseCase cause after editing agna it is not updating in dailyForm DB's AgnaList.
-                    *  Todo -> add sliding function in all agan screen as notesScreen contains for edit_agna and delete_agna.
+                    *
+                    *
+                    *
                     *  Todo -> solve the issue of report screen showing 99% result instead of 100% by adding aganPalaiPoints & aganNaPalaiPoints.
+                    *  Todo -> by typing on that list of agnas in report screen show tabs with data
+                    *   1st will be which day that agan palai and
+                    *   2nd tab will be of which days agan na palai.
                     * */
                     Shikshapatri(maharaj, guruji)
                 }
