@@ -70,8 +70,7 @@ fun PieChart(
     onPreviousMonthClicked: () -> Unit,
     onNextMonthClicked: () -> Unit,
     currentMonth: String,
-    date15year: String,
-    maharaj1: Int = 0
+    date15year: String
 ) {
 
     var circleCenter by remember {
@@ -217,7 +216,19 @@ fun PieChart(
                         factor = -0.92f
                     }
 
-                    val percentage = (item.value / totalValue.toFloat() * 100).toInt()
+                    var percentage = (item.value / totalValue.toFloat() * 100).toInt()
+
+                    if (item.color == Green) {
+                        if (percentage != 0
+                            && percentage != 25
+                            && percentage != 50
+                            && percentage != 75
+                            && percentage != 100
+                        ) {
+                            percentage += 1
+                        }
+                    }
+
                     drawContext.canvas.nativeCanvas.apply {
                         if (percentage > 3) {
                             rotate(rotateAngle) {

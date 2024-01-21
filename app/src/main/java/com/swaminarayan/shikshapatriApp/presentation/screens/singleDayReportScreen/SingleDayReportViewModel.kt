@@ -1,6 +1,7 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.singleDayReportScreen
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
+import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import com.swaminarayan.shikshapatriApp.domain.models.DailyForm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,8 +28,8 @@ class SingleDayReportViewModel @Inject constructor(
 
     var totalAgnas = 0L
     var date: LocalDate = LocalDate.now()
-    var agnaPalaiList : MutableList<DailyAgna> = mutableListOf()
-    var agnaNaPalaiList : MutableList<DailyAgna> = mutableListOf()
+    var agnaPalaiList : MutableList<Agna> = mutableListOf()
+    var agnaNaPalaiList : MutableList<Agna> = mutableListOf()
     var totalAgnaPalaiPoints = 0L
     var totalAgnaNaPalaiPoints = 0L
 
@@ -45,17 +48,42 @@ class SingleDayReportViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val form = dailyFormRepo.getDailyFormById(id)
             date = form.date
-            remainingAgna = totalAgnas - form.dailyAgnas.size.toLong()
 
             form.dailyAgnas.forEach { dailyAgna ->
-                if (dailyAgna.palai == true) {
-                    totalAgnaPalaiPoints += dailyAgna.rajipoPoints
-                    agnaPalaiList.add(dailyAgna)
-                } else {
-                    totalAgnaNaPalaiPoints += dailyAgna.rajipoPoints
-                    agnaNaPalaiList.add(dailyAgna)
+                val agna = agnaRepo.getAgnaById(dailyAgna.id)
+                try {
+                    if (agna != null) {
+                        if (dailyAgna.palai == true) {
+                            totalAgnaPalaiPoints += agna.rajipoPoints
+                            agnaPalaiList.add(agna)
+                        } else {
+                            totalAgnaNaPalaiPoints += agna.rajipoPoints
+                            agnaNaPalaiList.add(agna)
+                        }
+                    } else {
+                        removeAgnaFromDailyForm(form, dailyAgna, date)
+                    }
+                } catch (e: Exception) {
+                    Log.i("exceptionCaught", "SingleDayReport VM: $e")
                 }
             }
+            remainingAgna = totalAgnas - (agnaPalaiList.size + agnaNaPalaiList.size)
+        }
+    }
+
+    private fun removeAgnaFromDailyForm(
+        form: DailyForm,
+        dailyAgna: DailyAgna,
+        date: LocalDate
+    ) {
+        val list = mutableListOf<DailyAgna>()
+        form.dailyAgnas.forEach {
+            if (it.id != dailyAgna.id) {
+                list.add(dailyAgna)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            dailyFormRepo.upsertDailyForm(form.copy(dailyAgnas = list))
         }
     }
 

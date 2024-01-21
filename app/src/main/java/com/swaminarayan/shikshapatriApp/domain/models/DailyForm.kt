@@ -14,11 +14,16 @@ data class DailyForm(
 
 data class DailyAgna(
     val id: Long = 0L,
+    val palai: Boolean?
+)
+
+data class DailyAgnaHelperClass(
+    val id: Long = 0L,
+    val palai: Boolean?,
     val agna: String,
     val description: String,
     val author: String,
     val slokNo: Int,
     val rajipoPoints: Int,
-    val alwaysPalayChe: Boolean,
-    val palai: Boolean?
+    val alwaysPalayChe: Boolean
 )

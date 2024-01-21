@@ -17,7 +17,7 @@ class AgnaRepo(
         return dao.agnas()
     }
 
-    suspend fun getAgnaById(id: Long): Agna {
+    suspend fun getAgnaById(id: Long): Agna? {
         return dao.getAgnaById(id = id)
     }
 

@@ -1,6 +1,7 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.reportScreen
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -99,14 +100,21 @@ class ReportViewModel @Inject constructor(
                     _monthlyForms.value.add(form.date)
                     form.dailyAgnas.forEach {
                         val agna = agnaRepo.getAgnaById(it.id)
-                        setReportItemModelList(agna, it.palai)
-                        if (it.palai == true)
-                            _agnaPalaiPoints.value += agna.rajipoPoints
-                        else
-                            _agnaNaPalaiPoints.value += agna.rajipoPoints
+                        try {
+                            if (agna != null) {
+                                setReportItemModelList(agna, it.palai)
+                                if (it.palai == true)
+                                    _agnaPalaiPoints.value += agna.rajipoPoints
+                                else
+                                    _agnaNaPalaiPoints.value += agna.rajipoPoints
+                            }
+                        } catch (e: Exception) {
+                            Log.i("exceptionCaught", "Report VM: $e")
+                        }
                     }
                 }
             }
+
         }
     }
 

@@ -10,8 +10,6 @@ import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DSRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
 import com.swaminarayan.shikshapatriApp.data.repository.NoteRepo
-import com.swaminarayan.shikshapatriApp.domain.usecases.DeleteAgna
-import com.swaminarayan.shikshapatriApp.domain.usecases.UseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -56,20 +54,6 @@ object Module {
     @Singleton
     fun notesRepo(db: DB): NoteRepo {
         return NoteRepo(db.noteDAO)
-    }
-
-    @Provides
-    @Singleton
-    fun useCases(
-        agnaRepo: AgnaRepo,
-        dailyFormRepo: DailyFormRepo
-    ): UseCases {
-        return UseCases(
-            deleteAgna = DeleteAgna(
-                agnaRepo = agnaRepo,
-                dailyFormRepo = dailyFormRepo
-            )
-        )
     }
 
 }

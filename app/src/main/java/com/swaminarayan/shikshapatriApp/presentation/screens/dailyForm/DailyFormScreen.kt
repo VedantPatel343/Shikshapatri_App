@@ -29,6 +29,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,13 +37,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
-import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
 import com.swaminarayan.shikshapatriApp.presentation.Screens
+import com.swaminarayan.shikshapatriApp.presentation.components.LoadingAnimation
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.presentation.components.TopBar2Btn
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
@@ -50,7 +53,9 @@ import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import com.swaminarayan.shikshapatriApp.utils.dateFormatter
 import com.swaminarayan.shikshapatriApp.utils.showToast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
@@ -66,6 +71,8 @@ fun DailyFormScreen(
     val processedPalaiAgnas = vm.processedAgnas.toList().filter { it.palai == true }
     val processedNaPalaiAgnas = vm.processedAgnas.toList().filter { it.palai == false }
     val remainingAgnas = vm.remainingAgnas.toList()
+    val scope = rememberCoroutineScope()
+    val isLoadingAnimationVisible = vm.isLoadingAnimationVisible
 
     val liveScore = vm.liveScore
     val date = vm.date
@@ -94,10 +101,13 @@ fun DailyFormScreen(
                 navController.navigate(Screens.HomeScreen.route)
             },
             onSaveClicked = {
-                vm.onFormFilledClick()
-                if (remainingAgnas.isEmpty()) {
-                    navController.popBackStack()
-                    navController.navigate(Screens.HomeScreen.route)
+                scope.launch {
+                    vm.onFormFilledClick()
+                    if (remainingAgnas.isEmpty()) {
+                        delay(4000)
+                        navController.popBackStack()
+                        navController.navigate(Screens.HomeScreen.route)
+                    }
                 }
             }
         )
@@ -107,15 +117,15 @@ fun DailyFormScreen(
                 text = dateFormatter(date),
                 fontSize = 20.sp,
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(top = 10.dp)
+                    .padding(top = 12.dp)
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
             Text(
                 text = "Live Score = $liveScore",
                 fontSize = 20.sp,
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(top = 10.dp)
+                    .padding(10.dp)
             )
             LazyColumn {
 
@@ -136,7 +146,7 @@ fun DailyFormScreen(
                         agnaProcessed = { palai ->
                             vm.agnaProcessed(agnas, palai)
                         },
-                        false
+                        isAgnaProcessed = false
                     )
                 }
 
@@ -154,7 +164,7 @@ fun DailyFormScreen(
                         agnaProcessed = { palai ->
                             vm.agnaProcessed(helper, palai)
                         },
-                        true
+                        isAgnaProcessed = true
                     )
                 }
 
@@ -172,11 +182,16 @@ fun DailyFormScreen(
                         agnaProcessed = { palai ->
                             vm.agnaProcessed(helper, palai)
                         },
-                        true
+                        isAgnaProcessed = true
                     )
                 }
 
             }
+
+            if (isLoadingAnimationVisible) {
+                LoadingAnimation(message = "Saving...")
+            }
+
         }
     }
 
@@ -185,7 +200,7 @@ fun DailyFormScreen(
 
 @Composable
 private fun DailyAgnaItem(
-    dailyAgna: DailyAgna,
+    dailyAgna: DailyAgnaHelperClass,
     agnaProcessed: (palai: Boolean) -> Unit,
     isAgnaProcessed: Boolean
 ) {

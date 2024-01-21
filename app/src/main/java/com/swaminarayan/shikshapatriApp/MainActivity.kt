@@ -2,6 +2,7 @@ package com.swaminarayan.shikshapatriApp
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Pair
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -85,23 +85,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    /*
-                    *  Todo -> add loading time while deleting and editing agna in use-cases.
-                    *  Todo -> add loading time while saving dailyForm.
-                    *  Todo -> add edit agna use-case.
-                    *  Todo -> add paging in reportScreen.
-                    *  Todo -> add logic to pop screens from Drawer Menu.
-                    *  Todo -> work on splash screen.
-                    *  Todo -> create widget to fill daily form.
-                    *  Todo -> same as deleteAgnaUseCase make upsertAgnaUseCase cause after editing agna it is not updating in dailyForm DB's AgnaList.
-                    *
-                    *
-                    *
-                    *  Todo -> solve the issue of report screen showing 99% result instead of 100% by adding aganPalaiPoints & aganNaPalaiPoints.
-                    *  Todo -> by typing on that list of agnas in report screen show tabs with data
-                    *   1st will be which day that agan palai and
-                    *   2nd tab will be of which days agan na palai.
-                    * */
                     Shikshapatri(maharaj, guruji)
                 }
             }
@@ -123,7 +106,6 @@ class MainActivity : ComponentActivity() {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Shikshapatri(maharaj: Int, guruji: Int) {
 

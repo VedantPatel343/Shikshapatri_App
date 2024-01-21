@@ -32,7 +32,7 @@ class SplashViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             checkLocalDateMonday()
-            delay(500)
+            delay(300)
             _isLoading.value = false
         }
     }

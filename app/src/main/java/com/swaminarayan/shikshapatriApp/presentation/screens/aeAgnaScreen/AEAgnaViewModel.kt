@@ -1,5 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -91,13 +92,19 @@ class AEAgnaViewModel @Inject constructor(
             if (id != -1L) {
                 viewModelScope.launch {
                     val agna = agnaRepo.getAgnaById(id)
-                    agnaId = id
-                    _agna.value = agna.agna
-                    _des.value = agna.description
-                    _author.value = agna.author
-                    _slokNo.value = agna.slokNo.toString()
-                    _rajipoPoints.value = agna.rajipoPoints.toString()
-                    _alwaysPalayChe.value = agna.alwaysPalayChe
+                    try {
+                        if (agna != null) {
+                            agnaId = id
+                            _agna.value = agna.agna
+                            _des.value = agna.description
+                            _author.value = agna.author
+                            _slokNo.value = agna.slokNo.toString()
+                            _rajipoPoints.value = agna.rajipoPoints.toString()
+                            _alwaysPalayChe.value = agna.alwaysPalayChe
+                        }
+                    }  catch (e: Exception) {
+                        Log.i("exceptionCaught", "AEAgna VM: $e")
+                    }
                 }
             }
         }
@@ -165,18 +172,21 @@ class AEAgnaViewModel @Inject constructor(
                             _uiEventFlow.emit(UiEvents.ShowToast("Agna can not be empty."))
                         }
                     }
+
                     _author.value == "" -> {
                         viewModelScope.launch {
                             _authorError.value = true
                             _uiEventFlow.emit(UiEvents.ShowToast("Author can not be empty."))
                         }
                     }
+
                     _rajipoPoints.value == "" -> {
                         viewModelScope.launch {
                             _rajipoPointsError.value = true
                             _uiEventFlow.emit(UiEvents.ShowToast("Rajipo Points can not be empty."))
                         }
                     }
+
                     else -> {
                         if (agnaId == -1L) {
                             // Add new Agna

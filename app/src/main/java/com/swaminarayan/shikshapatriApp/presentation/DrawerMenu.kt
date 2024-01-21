@@ -70,6 +70,7 @@ fun DrawerMenu(drawerState: DrawerState, navController: NavHostController) {
                     } else {
                         navController.navigate(screen.route) {
                             launchSingleTop = true
+                            popUpTo(Screens.HomeScreen.route)
                         }
                     }
                 }

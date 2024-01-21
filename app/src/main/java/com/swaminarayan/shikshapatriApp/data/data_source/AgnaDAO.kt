@@ -18,7 +18,7 @@ interface AgnaDAO {
     suspend fun agnas(): List<Agna>
 
     @Query("SELECT * FROM Agna WHERE id = :id")
-    suspend fun getAgnaById(id: Long): Agna
+    suspend fun getAgnaById(id: Long): Agna?
 
     @Upsert
     suspend fun upsertAgna(agna: Agna)

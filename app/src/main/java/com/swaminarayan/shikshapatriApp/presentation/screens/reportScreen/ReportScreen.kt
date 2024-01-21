@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +43,6 @@ import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportScreen(
     drawerState: DrawerState,
@@ -66,9 +64,6 @@ fun ReportScreen(
 
     val reportAgnaItems by vm.reportAgnaItemList.collectAsStateWithLifecycle()
     val monthlyForms by vm.monthlyForms.collectAsStateWithLifecycle()
-
-    Log.i("listTest", "ReportScreen: $reportAgnaItems")
-    Log.i("listTest", "ReportScreen: $monthlyForms")
 
     Page(modifier = Modifier.padding(horizontal = 10.dp)) {
 
@@ -131,10 +126,10 @@ fun ReportScreen(
                 PieChart(
                     pieChartList,
                     showArrowBtn = true,
-                    currentMonth = currentMonth.name,
-                    date15year = date15.year.toString(),
+                    onPreviousMonthClicked = { vm.onPreviousMonthClicked() },
                     onNextMonthClicked = { vm.onNextMonthClicked() },
-                    onPreviousMonthClicked = { vm.onPreviousMonthClicked() }
+                    currentMonth = currentMonth.name,
+                    date15year = date15.year.toString()
                 )
             }
 
