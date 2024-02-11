@@ -2,7 +2,6 @@ package com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,17 +13,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -128,7 +124,7 @@ fun AEAgnaScreen(
                 },
                 label = { Text(text = "Agna") },
                 keyboardActions = KeyboardActions(onNext = { localFocus.moveFocus(FocusDirection.Down) }),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary,
                     cursorColor = MaterialTheme.colorScheme.primary,
@@ -147,7 +143,7 @@ fun AEAgnaScreen(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Next
                 ),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary,
                     cursorColor = MaterialTheme.colorScheme.primary
@@ -198,10 +194,11 @@ fun AEAgnaScreen(
                 text = points,
                 onTextChanged = { vm.onEvent(AEAgnaEvents.OnPointsChange(it)) },
                 onClearTextClicked = { vm.onEvent(AEAgnaEvents.OnPointsChange("")) },
-                label = "Rajipo Points",
+                label = "Points",
                 isError = rajipoPointsError,
                 keyBoardType = KeyboardType.Number,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                imeAction = ImeAction.Done
             )
 
             Spacer(modifier = Modifier.height(13.dp))
@@ -215,14 +212,14 @@ fun AEAgnaScreen(
             ) {
                 Text(
                     text = "Always Agna palay che?",
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Switch(
                     checked = alwaysPalayChe,
                     onCheckedChange = {
-                        vm.onEvent(AEAgnaEvents.OnAlwaysPalayCheChange(it))
+                        vm.onEvent(AEAgnaEvents.IsAlwaysPalayCheChange(it))
                     }
                 )
             }

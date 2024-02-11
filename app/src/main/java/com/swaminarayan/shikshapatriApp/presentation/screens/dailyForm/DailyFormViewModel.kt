@@ -18,8 +18,13 @@ import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -37,21 +42,27 @@ class DailyFormViewModel @Inject constructor(
     val remainingAgnas = mutableStateListOf<DailyAgnaHelperClass>()
 
     var isLoadingAnimationVisible = false
-    var liveScore: Int = 0
+
+    private val _liveScore: MutableStateFlow<Int> = MutableStateFlow(0)
+    val liveScore = _liveScore.map { it }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0
+    )
 
     var date: LocalDate = LocalDate.now()
-    var id = -1L
+    var formId = -1L
 
     init {
         savedStateHandle.get<String>(NAV_DATE)?.let {
             date = LocalDate.parse(it)
         }
-        savedStateHandle.get<Long>(FORM_ID)?.let { formId ->
+        savedStateHandle.get<Long>(FORM_ID)?.let { formId1 ->
             viewModelScope.launch {
-                id = formId
+                formId = formId1
                 getAgnas()
-                if (formId != -1L) {
-                    getDailyFormAgnas(formId)
+                if (formId1 != -1L) {
+                    getDailyFormAgnas(formId1)
                 } else {
                     listSetUp()
                 }
@@ -82,7 +93,7 @@ class DailyFormViewModel @Inject constructor(
                         palai = agnaPalai
                     )
                     if (agnaPalai == true) {
-                        liveScore += agna.rajipoPoints
+                        _liveScore.value += agna.rajipoPoints
                     }
                     processedAgnas.add(dailyAgna)
                 } else {
@@ -120,7 +131,7 @@ class DailyFormViewModel @Inject constructor(
                     rajipoPoints = agna.rajipoPoints,
                     palai = true
                 )
-                liveScore += agna.rajipoPoints
+                _liveScore.value += agna.rajipoPoints
                 processedAgnas.add(dailyAgna)
             } else {
                 val dailyAgna = DailyAgnaHelperClass(
@@ -153,7 +164,7 @@ class DailyFormViewModel @Inject constructor(
             }
         } else {
 
-            if (id == -1L) {
+            if (formId == -1L) {
                 val dailyForm = DailyForm(
                     dailyAgnas = getDailyAgnaList(processedAgnas.toList()),
                     date = date
@@ -164,7 +175,7 @@ class DailyFormViewModel @Inject constructor(
                 }
             } else {
                 val dailyForm = DailyForm(
-                    id = id,
+                    id = formId,
                     dailyAgnas = getDailyAgnaList(processedAgnas.toList()),
                     date = date
                 )
@@ -174,7 +185,7 @@ class DailyFormViewModel @Inject constructor(
                 }
             }
 
-         isLoadingAnimationVisible = true
+            isLoadingAnimationVisible = true
 
         }
     }
@@ -188,33 +199,45 @@ class DailyFormViewModel @Inject constructor(
         return dailyAgnas
     }
 
-    fun agnaProcessed(dailyAgna: DailyAgnaHelperClass, palai: Boolean) {
+    fun agnaProcessed(
+        dailyAgna: DailyAgnaHelperClass,
+        palai: Boolean,
+        isAgnaProcessed: Boolean
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val processedAgna = processedAgnas.find { it.id == dailyAgna.id }
-            val isAgnaProcessed = processedAgnas.contains(dailyAgna)
+            if (isAgnaProcessed) {
 
+                val processedAgna = processedAgnas.find { it.id == dailyAgna.id }
+                var isValid = false
+                if (processedAgna?.palai == false && palai) {
+                    isValid = true
+                    _liveScore.value += dailyAgna.rajipoPoints
+                } else if (processedAgna?.palai == true && !palai) {
+                    isValid = true
+                    _liveScore.value -= dailyAgna.rajipoPoints
+                }
 
-            if ((processedAgna?.palai == true && !palai)) {
-                liveScore -= dailyAgna.rajipoPoints
-            }
-            if ((!isAgnaProcessed && palai) || (processedAgna?.palai == false && palai)) {
-                liveScore += dailyAgna.rajipoPoints
-            }
-
-            if ((!isAgnaProcessed && !palai)
-                || (!isAgnaProcessed && palai)
-                || (processedAgna?.palai == false && palai)
-                || (processedAgna?.palai == true && !palai)
-            ) {
-                if (isAgnaProcessed) {
+                if (isValid) {
                     processedAgnas.removeIf { it.id == processedAgna?.id }
                     processedAgnas.add(dailyAgna.copy(palai = palai))
-                } else {
-                    remainingAgnas.removeIf { it.id == dailyAgna.id }
-                    processedAgnas.add(dailyAgna.copy(palai = palai))
                 }
-            }
 
+            } else {
+
+                if (palai) {
+                    _liveScore.value += dailyAgna.rajipoPoints
+                } else {
+                    _liveScore.value -= dailyAgna.rajipoPoints
+                }
+                remainingAgnas.removeIf { it.id == dailyAgna.id }
+                processedAgnas.add(dailyAgna.copy(palai = palai))
+            }
+        }
+    }
+
+    suspend fun getIdByDate(): Long {
+        return withContext(Dispatchers.IO) {
+            dailyFormRepo.getIdByDate(date)?.id!!
         }
     }
 }

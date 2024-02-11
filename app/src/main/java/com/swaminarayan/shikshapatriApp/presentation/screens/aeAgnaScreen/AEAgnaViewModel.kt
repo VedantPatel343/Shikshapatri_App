@@ -159,7 +159,7 @@ class AEAgnaViewModel @Inject constructor(
                 }
             }
 
-            is AEAgnaEvents.OnAlwaysPalayCheChange -> {
+            is AEAgnaEvents.IsAlwaysPalayCheChange -> {
                 _alwaysPalayChe.value = event.alwaysPalayChe
             }
 

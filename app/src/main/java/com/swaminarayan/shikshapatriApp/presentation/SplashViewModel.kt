@@ -4,18 +4,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swaminarayan.shikshapatriApp.R
-import com.swaminarayan.shikshapatriApp.constants.gurujiFrontFaceList
-import com.swaminarayan.shikshapatriApp.constants.gurujiList
-import com.swaminarayan.shikshapatriApp.constants.maharajList
 import com.swaminarayan.shikshapatriApp.data.repository.DSRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -32,7 +25,7 @@ class SplashViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             checkLocalDateMonday()
-            delay(300)
+            delay(700)
             _isLoading.value = false
         }
     }

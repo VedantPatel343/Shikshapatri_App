@@ -47,14 +47,14 @@ fun SingleDayReportScreen(
 
     val date = vm.date
     val totalAgnas = vm.totalAgnas
-    val totalAgnaPalaiPoints = vm.totalAgnaPalaiPoints
-    val totalAgnaNaPalaiPoints = vm.totalAgnaNaPalaiPoints
+    val totalAgnaPalanPoints = vm.totalAgnaPalanPoints
+    val totalAgnaLopPoints = vm.totalAgnaLopPoints
     val list = listOf(
-        PieChartInput(Green, totalAgnaPalaiPoints, "Agna Palan"),
-        PieChartInput(Red, totalAgnaNaPalaiPoints, "Agna Lop")
+        PieChartInput(Green, totalAgnaPalanPoints, "Agna Palan"),
+        PieChartInput(Red, totalAgnaLopPoints, "Agna Lop")
     )
-    val agnasNaPalaiList = vm.agnaNaPalaiList.toList()
-    val agnasPalaiList = vm.agnaPalaiList.toList()
+    val agnaLopList = vm.agnaLopList.toList()
+    val agnasPalanList = vm.agnaPalanList.toList()
     val remainingAgnas = vm.remainingAgna
 
     Page {
@@ -127,14 +127,14 @@ fun SingleDayReportScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${agnasPalaiList.size} - Agna Palai",
+                            text = "${agnasPalanList.size} - Agna Palai",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = Green
                         )
 
                         Text(
-                            text = "${agnasNaPalaiList.size} - Agna Na Palai",
+                            text = "${agnaLopList.size} - Agna Na Palai",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = Red
@@ -160,7 +160,7 @@ fun SingleDayReportScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "${agnasPalaiList.size} / $totalAgnas Agna Palai",
+                        text = "${agnasPalanList.size} / $totalAgnas Agna Palai",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -168,7 +168,7 @@ fun SingleDayReportScreen(
             }
 
             itemsIndexed(
-                agnasPalaiList,
+                agnasPalanList,
                 key = { _, item ->
                     item.id
                 }
@@ -207,7 +207,7 @@ fun SingleDayReportScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "${agnasNaPalaiList.size} / $totalAgnas Agna Na Palai",
+                        text = "${agnaLopList.size} / $totalAgnas Agna Na Palai",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -215,7 +215,7 @@ fun SingleDayReportScreen(
             }
 
             itemsIndexed(
-                agnasNaPalaiList,
+                agnaLopList,
                 key = { _, item ->
                     item.id
                 }

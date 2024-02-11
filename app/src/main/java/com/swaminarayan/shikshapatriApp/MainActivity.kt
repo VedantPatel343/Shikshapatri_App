@@ -39,8 +39,9 @@ import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
 import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.constants.NAV_DATE
 import com.swaminarayan.shikshapatriApp.constants.NOTE_ID
-import com.swaminarayan.shikshapatriApp.constants.gurujiFrontFaceList
 import com.swaminarayan.shikshapatriApp.constants.gurujiList
+import com.swaminarayan.shikshapatriApp.constants.gurujiLeftFaceList
+import com.swaminarayan.shikshapatriApp.constants.gurujiRightFaceList
 import com.swaminarayan.shikshapatriApp.constants.maharajList
 import com.swaminarayan.shikshapatriApp.presentation.DrawerMenu
 import com.swaminarayan.shikshapatriApp.presentation.Screens
@@ -92,14 +93,26 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setUpMaharajGuruji(): Pair<Int, Int> {
-        val guruji = if (maharajList.random().isLeftSideFace) {
-            gurujiFrontFaceList.random().image
-        } else {
-            gurujiList.random().image
+        val maharaj = maharajList.random()
+        val guruji = when {
+            maharaj.isLeftSideFace -> {
+                gurujiRightFaceList.random().image
+            }
+            maharaj.isRightSideFace -> {
+                gurujiLeftFaceList.random().image
+            }
+            else -> {
+                gurujiList.random().image
+            }
         }
-        val maharaj = maharajList.random().image
 
-        return Pair(maharaj, guruji)
+        val maharajImage = maharaj.image
+
+        return if (maharaj.isLeftSideFace) {
+            Pair(guruji, maharajImage)
+        } else {
+            Pair(maharajImage, guruji)
+        }
     }
 
 }

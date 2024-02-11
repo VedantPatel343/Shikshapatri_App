@@ -32,14 +32,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,7 +75,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -85,12 +83,6 @@ fun HomeScreen(
     maharaj: Int,
     guruji: Int
 ) {
-
-
-
-    val maharajTemp = R.drawable.maharaj_160
-
-
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -205,26 +197,6 @@ fun HomeScreen(
                 )
             }
         }
-
-
-
-//        Spacer(modifier = Modifier.height(10.dp))
-//        val list = listOf(
-//            PieChartInput(Green, 0L),
-//            PieChartInput(Red, 0L),
-//        )
-//        PieChart(
-//            list = list,
-//            showArrowBtn = false,
-//            onPreviousMonthClicked = { /*TODO*/ },
-//            onNextMonthClicked = { /*TODO*/ },
-//            currentMonth = "Jan",
-//            date15year = LocalDate.now().toString(),
-//            maharaj1 = maharaj
-//        )
-//        Spacer(modifier = Modifier.height(10.dp))
-
-
 
         LazyColumn {
             item {
@@ -342,10 +314,9 @@ fun Slogan(onLongClick: () -> Unit, text: String) {
         textAlign = TextAlign.Center
     )
     Divider(color = MaterialTheme.colorScheme.primary)
-    Spacer(modifier = Modifier.height(20.dp))
+    Spacer(modifier = Modifier.height(15.dp))
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateTextDialog(
     textValue: String,
@@ -411,7 +382,7 @@ fun UpdateTextDialog(
                     },
                     singleLine = false,
                     label = { Text(text = "") },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         cursorColor = MaterialTheme.colorScheme.primary,

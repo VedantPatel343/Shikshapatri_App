@@ -52,14 +52,14 @@ fun ReportScreen(
 
     val scope = rememberCoroutineScope()
     val totalAgnas = vm.totalAgnas
-    val totalAgnaPalaiPoints by vm.agnaPalaiPoints.collectAsStateWithLifecycle()
-    val totalAgnaNaPalaiPoints by vm.agnaNaPalaiPoints.collectAsStateWithLifecycle()
+    val totalAgnaPalanPoints by vm.agnaPalanPoints.collectAsStateWithLifecycle()
+    val totalAgnaLopPoints by vm.agnaLopPoints.collectAsStateWithLifecycle()
     val currentMonth by vm.currentMonth.collectAsStateWithLifecycle()
     val date15 by vm.date15.collectAsStateWithLifecycle()
 
     val pieChartList = listOf(
-        PieChartInput(Green, totalAgnaPalaiPoints, "Agna Palan"),
-        PieChartInput(Red, totalAgnaNaPalaiPoints, "Agna Lop")
+        PieChartInput(Green, totalAgnaPalanPoints, "Agna Palan"),
+        PieChartInput(Red, totalAgnaLopPoints, "Agna Lop")
     )
 
     val reportAgnaItems by vm.reportAgnaItemList.collectAsStateWithLifecycle()
@@ -67,13 +67,13 @@ fun ReportScreen(
 
     Page(modifier = Modifier.padding(horizontal = 10.dp)) {
 
-        Spacer(modifier = Modifier.height(10.dp))
         IconButton(
             onClick = {
                 scope.launch { drawerState.open() }
             }
         ) {
             Icon(
+                modifier = Modifier.padding(vertical = 10.dp),
                 imageVector = Icons.Default.Menu,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
@@ -82,7 +82,6 @@ fun ReportScreen(
 
         LazyColumn {
             item {
-                Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "$currentMonth days:",
                     fontSize = 17.sp,
@@ -137,16 +136,14 @@ fun ReportScreen(
                 Text(
                     text = "Total Agnas: $totalAgnas",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Agna Palai:",
+                    text = "Individual Agna Report:",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
@@ -157,7 +154,7 @@ fun ReportScreen(
                 items = reportAgnaItems.toList(),
                 key = { it.agnaId }
             ) {
-                ReportAgnaItem(it)
+                ReportAgnaItem(it, true)
             }
 
         }
@@ -165,16 +162,20 @@ fun ReportScreen(
 }
 
 @Composable
-fun ReportAgnaItem(reportAgnaItem: ReportAgnaItem) {
+fun ReportAgnaItem(reportAgnaItem: ReportAgnaItem, isAgnaPalanItem: Boolean) {
 
-    val totalAgnaPoint = reportAgnaItem.totalAgnaPoints
-    val agnaPalaiPoints = reportAgnaItem.agnaPalaiPoints
-    val agnaNaPalaiPoints = totalAgnaPoint - agnaPalaiPoints
-    val percentage = (agnaPalaiPoints / totalAgnaPoint.toFloat() * 100).toInt()
+    val totalAgnaPoint = reportAgnaItem.totalPoints
+    val agnaPalanPoints = reportAgnaItem.agnaPalanPoints
+    val agnaLopPoints = reportAgnaItem.agnaLopPoints
+    val percentage = if(isAgnaPalanItem) {
+        (agnaPalanPoints / totalAgnaPoint.toFloat() * 100).toInt()
+    } else {
+        (agnaLopPoints / totalAgnaPoint.toFloat() * 100).toInt()
+    }
 
     val pieChartList = listOf(
-        PieChartInput(Green, agnaPalaiPoints, "Agna Palan"),
-        PieChartInput(Red, agnaNaPalaiPoints, "Agna Lop")
+        PieChartInput(Green, agnaPalanPoints, "Agna Palan"),
+        PieChartInput(Red, agnaLopPoints, "Agna Lop")
     )
 
     Card(
@@ -192,7 +193,7 @@ fun ReportAgnaItem(reportAgnaItem: ReportAgnaItem) {
                 text = reportAgnaItem.agna,
                 fontSize = 18.sp
             )
-            SmallPieChart(pieChartList, percentage)
+            SmallPieChart(pieChartList, percentage, isAgnaPalanItem)
         }
     }
 

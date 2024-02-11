@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.swaminarayan.shikshapatriApp.constants.maharajList
 import com.swaminarayan.shikshapatriApp.domain.models.PieChartInput
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
+import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -216,18 +217,7 @@ fun PieChart(
                         factor = -0.92f
                     }
 
-                    var percentage = (item.value / totalValue.toFloat() * 100).toInt()
-
-                    if (item.color == Green) {
-                        if (percentage != 0
-                            && percentage != 25
-                            && percentage != 50
-                            && percentage != 75
-                            && percentage != 100
-                        ) {
-                            percentage += 1
-                        }
-                    }
+                    val percentage = (item.value / totalValue.toFloat() * 100).toInt()
 
                     drawContext.canvas.nativeCanvas.apply {
                         if (percentage > 3) {
@@ -272,7 +262,7 @@ fun PieChart(
 }
 
 @Composable
-fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int) {
+fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int, isAgnaPalanItem: Boolean) {
 
     var circleCenter by remember {
         mutableStateOf(Offset.Zero)
@@ -319,7 +309,7 @@ fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int) {
 
         Text(
             text = "$percentage %",
-            color = Green,
+            color = if(isAgnaPalanItem) Green else Red,
             fontSize = 15.sp
         )
 

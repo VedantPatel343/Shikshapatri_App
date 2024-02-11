@@ -31,15 +31,15 @@ class ReportViewModel @Inject constructor(
 
     var totalAgnas = 0
 
-    private val _agnaPalaiPoints: MutableStateFlow<Long> = MutableStateFlow(0)
-    val agnaPalaiPoints = _agnaPalaiPoints.map { it }.stateIn(
+    private val _agnaPalanPoints: MutableStateFlow<Long> = MutableStateFlow(0)
+    val agnaPalanPoints = _agnaPalanPoints.map { it }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         0
     )
 
-    private val _agnaNaPalaiPoints: MutableStateFlow<Long> = MutableStateFlow(0)
-    val agnaNaPalaiPoints = _agnaNaPalaiPoints.map { it }.stateIn(
+    private val _agnaLopPoints: MutableStateFlow<Long> = MutableStateFlow(0)
+    val agnaLopPoints = _agnaLopPoints.map { it }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         0
@@ -92,8 +92,8 @@ class ReportViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _monthlyForms.value.clear()
             _reportAgnaItemList.value.clear()
-            _agnaPalaiPoints.value = 0L
-            _agnaNaPalaiPoints.value = 0L
+            _agnaPalanPoints.value = 0L
+            _agnaLopPoints.value = 0L
 
             dailyForms.forEach { form ->
                 if (form.date.month == _currentMonth.value && form.date.year == _date15.value.year) {
@@ -102,11 +102,16 @@ class ReportViewModel @Inject constructor(
                         val agna = agnaRepo.getAgnaById(it.id)
                         try {
                             if (agna != null) {
-                                setReportItemModelList(agna, it.palai)
+                                setReportItemModelList(
+                                    agna = agna,
+                                    palai = it.palai,
+                                    points = (agna.rajipoPoints).toLong()
+                                )
+
                                 if (it.palai == true)
-                                    _agnaPalaiPoints.value += agna.rajipoPoints
+                                    _agnaPalanPoints.value += agna.rajipoPoints
                                 else
-                                    _agnaNaPalaiPoints.value += agna.rajipoPoints
+                                    _agnaLopPoints.value += agna.rajipoPoints
                             }
                         } catch (e: Exception) {
                             Log.i("exceptionCaught", "Report VM: $e")
@@ -118,7 +123,7 @@ class ReportViewModel @Inject constructor(
         }
     }
 
-    private fun setReportItemModelList(agna: Agna, palai: Boolean?) {
+    private fun setReportItemModelList(agna: Agna, palai: Boolean?, points: Long) {
         val item = _reportAgnaItemList.value.find { it.agnaId == agna.id }
         _reportAgnaItemList.value.removeAll { it.agnaId == agna.id }
 
@@ -126,19 +131,18 @@ class ReportViewModel @Inject constructor(
             val reportItem = ReportAgnaItem(
                 agnaId = item.agnaId,
                 agna = item.agna,
-                totalAgnaPoints = item.totalAgnaPoints + agna.rajipoPoints.toLong(),
-                agnaPalaiPoints = if (palai == true)
-                    item.agnaPalaiPoints + agna.rajipoPoints.toLong()
-                else
-                    item.agnaPalaiPoints
+                agnaLopPoints = if (palai == false) item.agnaLopPoints + points else item.agnaLopPoints,
+                agnaPalanPoints = if (palai == true) item.agnaPalanPoints + points else item.agnaPalanPoints,
+                totalPoints = item.totalPoints + points
             )
             _reportAgnaItemList.value.add(reportItem)
         } else {
             val reportItem = ReportAgnaItem(
                 agnaId = agna.id,
                 agna = agna.agna,
-                totalAgnaPoints = agna.rajipoPoints.toLong(),
-                agnaPalaiPoints = if (palai == true) agna.rajipoPoints.toLong() else 0L
+                agnaLopPoints = if (palai == false) points else 0L,
+                agnaPalanPoints = if (palai == true) points else 0L,
+                totalPoints = points
             )
             _reportAgnaItemList.value.add(reportItem)
         }
@@ -150,9 +154,10 @@ class ReportViewModel @Inject constructor(
         setUpList(dailyFormList)
     }
 
-    private fun update15Date(onNextClicked: Boolean) {
+    private fun update15Date(onNextBtnClicked: Boolean) {
         val queryDate =
-            if (onNextClicked) _date15.value.plusDays(30) else _date15.value.minusDays(30)
+            if (onNextBtnClicked) _date15.value.plusDays(30) else _date15.value.minusDays(30)
+
         val balance = if (queryDate > _date15.value) {
             queryDate.dayOfMonth - _date15.value.dayOfMonth
         } else {

@@ -7,7 +7,7 @@ sealed class AEAgnaEvents {
     data class OnAuthorChange(val author: String): AEAgnaEvents()
     data class OnSlokNoChange(val slokNo: String): AEAgnaEvents()
     data class OnPointsChange(val points: String): AEAgnaEvents()
-    data class OnAlwaysPalayCheChange(val alwaysPalayChe: Boolean): AEAgnaEvents()
+    data class IsAlwaysPalayCheChange(val alwaysPalayChe: Boolean): AEAgnaEvents()
 
 
     data object OnSaveAgna: AEAgnaEvents()

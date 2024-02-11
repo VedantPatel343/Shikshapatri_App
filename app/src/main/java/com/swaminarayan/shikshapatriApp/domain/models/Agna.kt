@@ -12,5 +12,5 @@ data class Agna(
     val author: String,
     val slokNo: Int,
     val rajipoPoints: Int,
-    val alwaysPalayChe: Boolean,
+    val alwaysPalayChe: Boolean
 )

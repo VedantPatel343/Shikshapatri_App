@@ -28,10 +28,10 @@ class SingleDayReportViewModel @Inject constructor(
 
     var totalAgnas = 0L
     var date: LocalDate = LocalDate.now()
-    var agnaPalaiList : MutableList<Agna> = mutableListOf()
-    var agnaNaPalaiList : MutableList<Agna> = mutableListOf()
-    var totalAgnaPalaiPoints = 0L
-    var totalAgnaNaPalaiPoints = 0L
+    var agnaPalanList : MutableList<Agna> = mutableListOf()
+    var agnaLopList : MutableList<Agna> = mutableListOf()
+    var totalAgnaPalanPoints = 0L
+    var totalAgnaLopPoints = 0L
 
     var remainingAgna = 0L
 
@@ -54,27 +54,26 @@ class SingleDayReportViewModel @Inject constructor(
                 try {
                     if (agna != null) {
                         if (dailyAgna.palai == true) {
-                            totalAgnaPalaiPoints += agna.rajipoPoints
-                            agnaPalaiList.add(agna)
+                            totalAgnaPalanPoints += agna.rajipoPoints
+                            agnaPalanList.add(agna)
                         } else {
-                            totalAgnaNaPalaiPoints += agna.rajipoPoints
-                            agnaNaPalaiList.add(agna)
+                            totalAgnaLopPoints += agna.rajipoPoints
+                            agnaLopList.add(agna)
                         }
                     } else {
-                        removeAgnaFromDailyForm(form, dailyAgna, date)
+                        removeAgnaFromDailyForm(form, dailyAgna)
                     }
                 } catch (e: Exception) {
                     Log.i("exceptionCaught", "SingleDayReport VM: $e")
                 }
             }
-            remainingAgna = totalAgnas - (agnaPalaiList.size + agnaNaPalaiList.size)
+            remainingAgna = totalAgnas - (agnaPalanList.size + agnaLopList.size)
         }
     }
 
     private fun removeAgnaFromDailyForm(
         form: DailyForm,
-        dailyAgna: DailyAgna,
-        date: LocalDate
+        dailyAgna: DailyAgna
     ) {
         val list = mutableListOf<DailyAgna>()
         form.dailyAgnas.forEach {

@@ -1,7 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.dailyForm
 
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
@@ -68,14 +68,15 @@ fun DailyFormScreen(
 ) {
 
     val context = LocalContext.current
-    val processedPalaiAgnas = vm.processedAgnas.toList().filter { it.palai == true }
-    val processedNaPalaiAgnas = vm.processedAgnas.toList().filter { it.palai == false }
+    val processedAgnaPalanList = vm.processedAgnas.toList().filter { it.palai == true }
+    val processedAgnaLopList = vm.processedAgnas.toList().filter { it.palai == false }
     val remainingAgnas = vm.remainingAgnas.toList()
     val scope = rememberCoroutineScope()
     val isLoadingAnimationVisible = vm.isLoadingAnimationVisible
 
-    val liveScore = vm.liveScore
+    val liveScore by vm.liveScore.collectAsStateWithLifecycle()
     val date = vm.date
+    val formId = vm.formId
 
     BackHandler {
         navController.popBackStack()
@@ -104,7 +105,7 @@ fun DailyFormScreen(
                 scope.launch {
                     vm.onFormFilledClick()
                     if (remainingAgnas.isEmpty()) {
-                        delay(4000)
+                        delay(1000)
                         navController.popBackStack()
                         navController.navigate(Screens.HomeScreen.route)
                     }
@@ -113,26 +114,51 @@ fun DailyFormScreen(
         )
 
         Column {
-            Text(
-                text = dateFormatter(date),
-                fontSize = 20.sp,
+            Row(
                 modifier = Modifier
-                    .padding(top = 12.dp)
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp, horizontal = 5.dp)
+                    .padding(top = if (formId != -1L) 0.dp else 3.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = dateFormatter(date),
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .weight(0.68f),
+                    textAlign = TextAlign.End
+                )
+                Box(
+                    modifier = Modifier.weight(0.32f),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    if (formId != -1L) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    val id = vm.getIdByDate()
+                                    navController.navigate("single_day_report_screen/${id}")
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outlined_report_icon),
+                                contentDescription = "report btn"
+                            )
+                        }
+                    }
+                }
+            }
             Text(
                 text = "Live Score = $liveScore",
                 fontSize = 20.sp,
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(bottom = 10.dp)
             )
             LazyColumn {
 
                 item {
-                    Log.i("listTest", "remaining: ${remainingAgnas.toList()}")
-                    Log.i("listTest", "palai: ${processedPalaiAgnas.toList()}")
-                    Log.i("listTest", "na palai: ${processedNaPalaiAgnas.toList()}")
                     Text(
                         text = "Agnas:",
                         modifier = Modifier
@@ -140,11 +166,11 @@ fun DailyFormScreen(
                         fontSize = 18.sp
                     )
                 }
-                items(remainingAgnas) { agnas ->
+                items(remainingAgnas) { agna ->
                     DailyAgnaItem(
-                        agnas,
+                        agna,
                         agnaProcessed = { palai ->
-                            vm.agnaProcessed(agnas, palai)
+                            vm.agnaProcessed(agna, palai, false)
                         },
                         isAgnaProcessed = false
                     )
@@ -152,17 +178,21 @@ fun DailyFormScreen(
 
                 item {
                     Text(
-                        text = "Agna Palai:",
+                        text = "Agna Palan:",
                         modifier = Modifier
                             .padding(10.dp),
                         fontSize = 18.sp
                     )
                 }
-                items(processedPalaiAgnas) { helper ->
+                items(
+                    processedAgnaPalanList,
+                    key = { it.id }
+                )
+                { agna ->
                     DailyAgnaItem(
-                        helper,
+                        agna,
                         agnaProcessed = { palai ->
-                            vm.agnaProcessed(helper, palai)
+                            vm.agnaProcessed(agna, palai, true)
                         },
                         isAgnaProcessed = true
                     )
@@ -170,17 +200,20 @@ fun DailyFormScreen(
 
                 item {
                     Text(
-                        text = "Agna Na Palai:",
+                        text = "Agna Lop:",
                         modifier = Modifier
                             .padding(10.dp),
                         fontSize = 18.sp
                     )
                 }
-                items(processedNaPalaiAgnas) { helper ->
+                items(
+                    processedAgnaLopList,
+                    key = { it.id }
+                ) { agna ->
                     DailyAgnaItem(
-                        helper,
+                        agna,
                         agnaProcessed = { palai ->
-                            vm.agnaProcessed(helper, palai)
+                            vm.agnaProcessed(agna, palai, true)
                         },
                         isAgnaProcessed = true
                     )
@@ -294,21 +327,11 @@ private fun DailyAgnaItem(
                                 .fillMaxWidth()
                         ) {
 
-                            Spacer(modifier = Modifier.height(5.dp))
-
-                            Row {
-//                                Text(
-//                                    text = "Agna - ",
-//                                    fontSize = 18.sp,
-//                                    color = textColor
-//                                )
-
-                                Text(
-                                    text = dailyAgna.agna,
-                                    fontSize = 18.sp,
-                                    color = textColor
-                                )
-                            }
+                            Text(
+                                text = dailyAgna.agna,
+                                fontSize = 18.sp,
+                                color = textColor
+                            )
 
                             if (dailyAgna.slokNo != 0) {
                                 Text(
@@ -367,23 +390,21 @@ private fun DailyAgnaItem(
                                 color = textColor
                             )
 
-                            Text(
-                                text = "Always palay che? - ${if (dailyAgna.alwaysPalayChe) "YES" else "NO"}",
-                                modifier = Modifier.padding(top = 10.dp),
-                                fontSize = 18.sp,
-                                color = textColor
-                            )
+//                        Text(
+//                            text = "Always palay che? - ${if (dailyAgna.alwaysPalayChe) "YES" else "NO"}",
+//                            modifier = Modifier.padding(top = 10.dp),
+//                            fontSize = 18.sp,
+//                            color = textColor
+//                        )
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(5.dp))
 
                         }
                     }
-
                 }
 
             }
+
         }
     }
-
-
 }
