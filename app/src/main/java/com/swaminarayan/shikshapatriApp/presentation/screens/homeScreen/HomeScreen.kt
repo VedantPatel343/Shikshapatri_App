@@ -1,8 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.homeScreen
 
 import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -27,19 +25,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,8 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -62,7 +56,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.calender.CalenderDataSource
 import com.swaminarayan.shikshapatriApp.calender.ui.Calender
 import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
@@ -70,7 +63,6 @@ import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import com.swaminarayan.shikshapatriApp.utils.dateFormatter
-import com.swaminarayan.shikshapatriApp.utils.showToast
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -78,42 +70,31 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    drawerState: DrawerState,
     vm: HomeViewModel = hiltViewModel(),
     maharaj: Int,
     guruji: Int
 ) {
 
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val notes by vm.notes.collectAsStateWithLifecycle()
 
-    var checkLocalDate by rememberSaveable {
-        mutableStateOf(true)
-    }
     var showDialog by rememberSaveable {
         mutableStateOf(false)
     }
     val sloganText by vm.slogan.collectAsStateWithLifecycle()
     val firstDayOfWeek by vm.firstDayOfWeek.collectAsStateWithLifecycle()
     val lastDayOfWeek by vm.lastDayOfWeek.collectAsStateWithLifecycle()
-    val today = LocalDate.now()
     val calenderData = CalenderDataSource()
     val visibleDateList = calenderData.getVisibleDates(startDate = firstDayOfWeek)
     val dateList by vm.dailyFormDateList.collectAsStateWithLifecycle()
 
-    Log.i("dateTest", "$checkLocalDate")
-    Log.i("dateTest", "$visibleDateList")
-    if (checkLocalDate) {
-        checkLocalDate = if ((!visibleDateList.contains(LocalDate.now()))) {
-            Log.i("dateTest", "before = HomeScreen: $firstDayOfWeek")
-            Log.i("dateTest", "before = HomeScreen: $lastDayOfWeek")
-            vm.saveNextDateToDB()
-            Log.i("dateTest", "after = HomeScreen: $firstDayOfWeek")
-            Log.i("dateTest", "after = HomeScreen: $lastDayOfWeek")
-            false
-        } else {
-            false
+    LaunchedEffect(key1 = true) {
+        val flag = vm.flag
+        if (!flag) {
+            vm.setUpList(firstDayOfWeek, lastDayOfWeek)
+        }
+        if (flag) {
+            vm.changeFlagValue()
         }
     }
 
@@ -131,49 +112,19 @@ fun HomeScreen(
     }
 
     Page {
-        Row(
+        Box(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 15.dp)
-                .padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(vertical = 10.dp)
+                .padding(top = 5.dp),
+            contentAlignment = Alignment.Center
         ) {
-            IconButton(
-                onClick = {
-                    scope.launch { drawerState.open() }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Navigation Button"
-                )
-            }
-
             Text(
                 text = "Shikshapatri",
-                fontSize = 25.sp,
+                fontSize = 30.sp,
                 fontFamily = FontFamily.Cursive,
                 color = MaterialTheme.colorScheme.primary
             )
-
-            IconButton(
-                onClick = {
-                    scope.launch {
-                        val id = vm.getIdByDate(today)
-                        if (id != -1L) {
-                            navController.navigate("single_day_report_screen/${id}")
-                        } else {
-                            showToast(context, "First fill today's form.", true)
-                        }
-                    }
-                }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.outlined_report_icon),
-                    contentDescription = "Report Button"
-                )
-            }
         }
 
         Box(
@@ -213,18 +164,9 @@ fun HomeScreen(
                         onDateClicked = { date ->
                             scope.launch {
                                 val id = vm.getIdByDate(date)
-                                if ((id != -1L) || (date <= today)) {
-                                    navController.navigate("daily_form_screen/${id}/$date")
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Can not access it today.",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                }
+                                navController.navigate("daily_form_screen/${id}/$date")
+//                            navController.popBackStack()
                             }
-                            navController.popBackStack()
                         },
                         onNextClick = {
                             vm.onNextDateClicked()

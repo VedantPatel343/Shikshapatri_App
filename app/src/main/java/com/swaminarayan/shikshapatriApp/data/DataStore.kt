@@ -33,7 +33,8 @@ class DataStore(private val context: Context) {
     }.flowOn(Dispatchers.IO)
 
     fun getSlogan(): Flow<String> = context.dataStore.data.map {
-        it[SLOGAN] ?: "પૂ. ગુરૂજી અને મહારાજ ની અતી કૃપાને કારણે જ હું આ આજ્ઞાઓ નું પાલન કરી સકું છું."
+        it[SLOGAN]
+            ?: "પૂ. ગુરૂજી અને મહારાજ ની અતી કૃપાને કારણે જ હું આ આજ્ઞાઓ નું પાલન કરી સકું છું."
     }.flowOn(Dispatchers.IO)
 
     suspend fun updateHomeFirstDay(date: String) {

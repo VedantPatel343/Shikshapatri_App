@@ -17,6 +17,9 @@ interface DailyFormDAO {
     @Query("SELECT * FROM DailyForm ORDER BY date ASC")
     suspend fun dailyFormList(): List<DailyForm>
 
+    @Query("SELECT * FROM DailyForm WHERE date BETWEEN :firstDay AND :lastDay ORDER BY date ASC")
+    suspend fun getDailyFormBetweenDays(firstDay: LocalDate, lastDay: LocalDate): List<DailyForm>
+
     @Query("SELECT * FROM DailyForm WHERE id = :id")
     suspend fun getDailyReportById(id: Long): DailyForm
 

@@ -6,16 +6,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,27 +39,35 @@ import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import com.swaminarayan.shikshapatriApp.presentation.components.ConfirmMessage
+import com.swaminarayan.shikshapatriApp.presentation.components.Notice
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
-import com.swaminarayan.shikshapatriApp.presentation.components.TopBar
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import com.swaminarayan.shikshapatriApp.utils.showToast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllAgnaScreen(
-    drawerState: DrawerState,
     navController: NavHostController,
     vm: AllAgnaViewModel = hiltViewModel()
 ) {
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val agnas by vm.agnas.collectAsStateWithLifecycle()
+
+
+    var isNoticeVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(key1 = true) {
+        isNoticeVisible = true
+        delay(6000)
+        isNoticeVisible = false
+    }
 
     LaunchedEffect(key1 = true) {
         vm.uiEventFlow.collectLatest {
@@ -74,25 +80,47 @@ fun AllAgnaScreen(
     }
 
     Page {
-        TopBar(
-            title = "All Agnas",
-            icon = Icons.Default.Menu,
-            onBtnClick = { scope.launch { drawerState.open() } }
-        )
+
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp)
+                .padding(top = 5.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "All Agnas",
+                fontSize = 30.sp,
+                fontFamily = FontFamily.Cursive,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        LazyColumn {
-            items(agnas, key = { it.id }) { agna ->
-                AgnaItem(
-                    agna,
-                    editAgnaFun = {
-                        navController.navigate("add_edit_agna_screen/${agna.id}")
-                    },
-                    deleteAgnaFun = {
-                        vm.deleteAgna(agna)
-                    }
-                )
+        if (agnas.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "No Agna is added.")
+            }
+        } else {
+            Notice(
+                text = "Swipe agna right or left to edit or delete it.",
+                isNoticeVisible = isNoticeVisible,
+                leftArrowColor = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(15.dp))
+            LazyColumn {
+                items(agnas, key = { it.id }) { agna ->
+                    AgnaItem(
+                        agna,
+                        editAgnaFun = {
+                            navController.navigate("add_edit_agna_screen/${agna.id}")
+                        },
+                        deleteAgnaFun = {
+                            vm.deleteAgna(agna)
+                        }
+                    )
+                }
             }
         }
 

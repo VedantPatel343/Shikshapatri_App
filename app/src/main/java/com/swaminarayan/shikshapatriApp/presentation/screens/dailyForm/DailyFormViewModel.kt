@@ -36,7 +36,7 @@ class DailyFormViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var _agnas: List<Agna> = emptyList()
+    var agnas: List<Agna> = emptyList()
 
     val processedAgnas = mutableStateListOf<DailyAgnaHelperClass>()
     val remainingAgnas = mutableStateListOf<DailyAgnaHelperClass>()
@@ -79,7 +79,7 @@ class DailyFormViewModel @Inject constructor(
                 dailyAgnaIds.add(it.id)
             }
 
-            _agnas.forEach { agna ->
+            agnas.forEach { agna ->
                 if (dailyAgnaIds.contains(agna.id)) {
                     val agnaPalai = agnaPalai(agna.id, list)
                     val dailyAgna = DailyAgnaHelperClass(
@@ -119,7 +119,7 @@ class DailyFormViewModel @Inject constructor(
     }
 
     private fun listSetUp() {
-        _agnas.forEach { agna ->
+        agnas.forEach { agna ->
             if (agna.alwaysPalayChe) {
                 val dailyAgna = DailyAgnaHelperClass(
                     id = agna.id,
@@ -151,7 +151,7 @@ class DailyFormViewModel @Inject constructor(
 
 
     private suspend fun getAgnas() {
-        _agnas = agnaRepo.agnas()
+        agnas = agnaRepo.agnas()
     }
 
     private val _uiEventFlow = MutableSharedFlow<UiEvents>()

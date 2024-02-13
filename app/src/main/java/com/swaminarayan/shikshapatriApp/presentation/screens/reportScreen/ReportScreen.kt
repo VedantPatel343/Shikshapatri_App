@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,13 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,7 +42,6 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReportScreen(
-    drawerState: DrawerState,
     navController: NavHostController,
     vm: ReportViewModel = hiltViewModel()
 ) {
@@ -67,16 +63,18 @@ fun ReportScreen(
 
     Page(modifier = Modifier.padding(horizontal = 10.dp)) {
 
-        IconButton(
-            onClick = {
-                scope.launch { drawerState.open() }
-            }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
+                .padding(top = 5.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                modifier = Modifier.padding(vertical = 10.dp),
-                imageVector = Icons.Default.Menu,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+            Text(
+                text = "Report",
+                fontSize = 30.sp,
+                fontFamily = FontFamily.Cursive,
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -167,7 +165,7 @@ fun ReportAgnaItem(reportAgnaItem: ReportAgnaItem, isAgnaPalanItem: Boolean) {
     val totalAgnaPoint = reportAgnaItem.totalPoints
     val agnaPalanPoints = reportAgnaItem.agnaPalanPoints
     val agnaLopPoints = reportAgnaItem.agnaLopPoints
-    val percentage = if(isAgnaPalanItem) {
+    val percentage = if (isAgnaPalanItem) {
         (agnaPalanPoints / totalAgnaPoint.toFloat() * 100).toInt()
     } else {
         (agnaLopPoints / totalAgnaPoint.toFloat() * 100).toInt()

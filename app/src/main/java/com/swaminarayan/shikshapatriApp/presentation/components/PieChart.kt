@@ -309,7 +309,7 @@ fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int, isAgnaPala
 
         Text(
             text = "$percentage %",
-            color = if(isAgnaPalanItem) Green else Red,
+            color = if (isAgnaPalanItem) Green else Red,
             fontSize = 15.sp
         )
 

@@ -1,6 +1,5 @@
 package com.swaminarayan.shikshapatriApp.data.repository
 
-import android.util.Log
 import com.swaminarayan.shikshapatriApp.data.data_source.AgnaDAO
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import kotlinx.coroutines.flow.Flow

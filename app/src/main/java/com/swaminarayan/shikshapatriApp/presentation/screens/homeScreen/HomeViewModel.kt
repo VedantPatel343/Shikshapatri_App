@@ -1,7 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.homeScreen
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,6 +19,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -59,7 +59,8 @@ class HomeViewModel @Inject constructor(
         LocalDate.now()
     )
 
-    private val _dailyFormDateList: MutableStateFlow<MutableList<LocalDate>> = MutableStateFlow(mutableListOf())
+    private val _dailyFormDateList: MutableStateFlow<MutableList<LocalDate>> =
+        MutableStateFlow(mutableListOf())
     val dailyFormDateList = _dailyFormDateList.map { it }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -71,12 +72,18 @@ class HomeViewModel @Inject constructor(
     private var lastDayJob: Job? = null
     private var sloganJob: Job? = null
 
+    var flag = true
+
     init {
-        getFirstDay()
-        getLastDay()
-        setUpList()
-        getSlogan()
-        getNotes()
+        viewModelScope.launch {
+            getFirstDay()
+            getLastDay()
+            getSlogan()
+            getNotes()
+
+            val days = getFirstLastDays()
+            setUpList(firstDay = days.first, lastDay = days.second)
+        }
     }
 
     private fun getSlogan() {
@@ -107,9 +114,13 @@ class HomeViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun setUpList() {
+    fun setUpList(firstDay: LocalDate, lastDay: LocalDate) {
         viewModelScope.launch(Dispatchers.IO) {
-            dailyFormRepo.dailyFormList().forEach { form ->
+            _dailyFormDateList.value.clear()
+            dailyFormRepo.getDailyFormBetweenDays(
+                firstDay = firstDay,
+                lastDay = lastDay
+            ).forEach { form ->
                 _dailyFormDateList.value.add(form.date)
             }
         }
@@ -123,27 +134,42 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onNextDateClicked() {
+        setUpList(
+            firstDay = _firstDayOfWeek.value.plusDays(7),
+            lastDay = _lastDayOfWeek.value.plusDays(7)
+        )
         _firstDayOfWeek.value = _firstDayOfWeek.value.plusDays(7)
         _lastDayOfWeek.value = _lastDayOfWeek.value.plusDays(7)
     }
 
     fun onPrevDateClicked() {
+        setUpList(
+            firstDay = _firstDayOfWeek.value.minusDays(7),
+            lastDay = _lastDayOfWeek.value.minusDays(7)
+        )
         _firstDayOfWeek.value = _firstDayOfWeek.value.minusDays(7)
         _lastDayOfWeek.value = _lastDayOfWeek.value.minusDays(7)
-    }
-
-    fun saveNextDateToDB() {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.i("dateTest", "fun called.")
-            dsRepo.updateHomeFirstDay(_firstDayOfWeek.value.plusDays(7).toString())
-            dsRepo.updateHomeLastDay(_lastDayOfWeek.value.plusDays(7).toString())
-        }
     }
 
     fun updateSloganText(slogan: String) {
         viewModelScope.launch(Dispatchers.IO) {
             dsRepo.updateSlogan(slogan)
         }
+    }
+
+    private fun getFirstLastDays(): Pair<LocalDate, LocalDate> {
+        val today = LocalDate.now()
+        val mondayValue = DayOfWeek.MONDAY.value
+        val todayWeekDayValue = today.dayOfWeek.value
+
+        val balance = todayWeekDayValue - mondayValue
+        val firstDay = today.minusDays(balance.toLong())
+        val lastDay = firstDay.plusDays(6)
+        return Pair(firstDay, lastDay)
+    }
+
+    fun changeFlagValue() {
+        flag = false
     }
 
 }

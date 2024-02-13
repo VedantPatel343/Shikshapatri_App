@@ -2,7 +2,6 @@ package com.swaminarayan.shikshapatriApp.presentation.screens.noteScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.NoteRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Note
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NotesViewModel @Inject constructor(
     private val notesRepo: NoteRepo
-): ViewModel() {
+) : ViewModel() {
 
     private val _notes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
     val notes = _notes.map { it }.stateIn(
@@ -43,7 +42,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun deleteNote(note: Note) {
-        viewModelScope.launch (Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             notesRepo.deleteNote(note)
         }
     }

@@ -6,47 +6,39 @@ import android.util.Pair
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.DrawerValue
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swaminarayan.shikshapatriApp.constants.AGNA_ID
 import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.constants.NAV_DATE
 import com.swaminarayan.shikshapatriApp.constants.NOTE_ID
-import com.swaminarayan.shikshapatriApp.constants.gurujiList
 import com.swaminarayan.shikshapatriApp.constants.gurujiLeftFaceList
+import com.swaminarayan.shikshapatriApp.constants.gurujiList
 import com.swaminarayan.shikshapatriApp.constants.gurujiRightFaceList
 import com.swaminarayan.shikshapatriApp.constants.maharajList
-import com.swaminarayan.shikshapatriApp.presentation.DrawerMenu
 import com.swaminarayan.shikshapatriApp.presentation.Screens
 import com.swaminarayan.shikshapatriApp.presentation.SplashViewModel
-import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
 import com.swaminarayan.shikshapatriApp.presentation.screens.aeAgnaScreen.AEAgnaScreen
 import com.swaminarayan.shikshapatriApp.presentation.screens.aeNoteScreen.AENoteScreen
 import com.swaminarayan.shikshapatriApp.presentation.screens.allAgnaScreen.AllAgnaScreen
@@ -98,9 +90,11 @@ class MainActivity : ComponentActivity() {
             maharaj.isLeftSideFace -> {
                 gurujiRightFaceList.random().image
             }
+
             maharaj.isRightSideFace -> {
                 gurujiLeftFaceList.random().image
             }
+
             else -> {
                 gurujiList.random().image
             }
@@ -122,51 +116,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Shikshapatri(maharaj: Int, guruji: Int) {
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navController = rememberNavController()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = drawerState.isOpen,
-        drawerContent = {
-            ModalDrawerSheet {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .background(MaterialTheme.colorScheme.primary),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-
-                    CircularImage(image = R.drawable.maharaj_3, size = 120.dp)
-                    Text(
-                        text = "Shikshapatri",
-                        color = MaterialTheme.colorScheme.background,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Cursive
-                    )
-                }
-
-                DrawerMenu(
-                    drawerState = drawerState,
-                    navController = navController
-                )
-            }
+    Scaffold(
+        bottomBar = {
+            BottomNavigation(navController)
         }
     ) {
 
         NavHost(
+            modifier = Modifier.padding(it),
             navController = navController,
             startDestination = Screens.HomeScreen.route
         ) {
             composable(Screens.HomeScreen.route) {
-                HomeScreen(navController, drawerState, maharaj = maharaj, guruji = guruji)
+                HomeScreen(navController, maharaj = maharaj, guruji = guruji)
             }
 
             composable(Screens.AllAgnaScreen.route) {
-                AllAgnaScreen(drawerState, navController)
+                AllAgnaScreen(navController)
             }
 
             composable(
@@ -188,11 +156,11 @@ fun Shikshapatri(maharaj: Int, guruji: Int) {
             }
 
             composable(Screens.ReportScreen.route) {
-                ReportScreen(drawerState, navController)
+                ReportScreen(navController)
             }
 
             composable(Screens.NoteScreen.route) {
-                NotesScreen(drawerState, navController)
+                NotesScreen(navController)
             }
 
             composable(
@@ -214,4 +182,58 @@ fun Shikshapatri(maharaj: Int, guruji: Int) {
 
     }
 
+}
+
+@Composable
+fun BottomNavigation(navController: NavHostController) {
+
+    val screens = listOf(
+        Screens.AEAgnaScreen,
+        Screens.AllAgnaScreen,
+        Screens.HomeScreen,
+        Screens.ReportScreen,
+        Screens.NoteScreen
+    )
+
+    val backStackEntry = navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry.value?.destination?.route
+
+    if (
+        currentRoute != Screens.AEAgnaScreen.route &&
+        currentRoute != Screens.AENoteScreen.route &&
+        currentRoute != Screens.DailyFormScreen.route &&
+        currentRoute != Screens.SingleDayReportScreen.route
+    )
+        NavigationBar {
+            screens.forEach { screen ->
+                val selected = currentRoute == screen.route
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = {
+                        if (!selected) {
+                            if (screen.route == Screens.AEAgnaScreen.route) {
+                                navController.navigate("add_edit_agna_screen/${-1L}") {
+                                    launchSingleTop = true
+                                }
+                            } else {
+                                navController.navigate(screen.route) {
+                                    launchSingleTop = true
+                                    popUpTo(0)
+                                }
+                            }
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = if (selected) screen.filledIcon else screen.outlinedIcon),
+                            contentDescription = null
+                        )
+                    },
+                    label = {
+                        Text(text = screen.title)
+                    }
+                )
+            }
+
+        }
 }

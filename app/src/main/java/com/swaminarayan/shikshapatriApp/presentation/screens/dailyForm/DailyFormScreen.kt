@@ -1,7 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.dailyForm
 
 import android.os.Build
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,8 +44,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
-import com.swaminarayan.shikshapatriApp.presentation.Screens
 import com.swaminarayan.shikshapatriApp.presentation.components.LoadingAnimation
+import com.swaminarayan.shikshapatriApp.presentation.components.Notice
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.presentation.components.TopBar2Btn
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
@@ -58,6 +58,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -73,15 +74,20 @@ fun DailyFormScreen(
     val remainingAgnas = vm.remainingAgnas.toList()
     val scope = rememberCoroutineScope()
     val isLoadingAnimationVisible = vm.isLoadingAnimationVisible
+    val agnasSize = vm.agnas.size
+
+    var isNoticeVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(key1 = true) {
+        isNoticeVisible = true
+        delay(6000)
+        isNoticeVisible = false
+    }
 
     val liveScore by vm.liveScore.collectAsStateWithLifecycle()
     val date = vm.date
     val formId = vm.formId
-
-    BackHandler {
-        navController.popBackStack()
-        navController.navigate(Screens.HomeScreen.route)
-    }
 
     LaunchedEffect(key1 = true) {
         vm.uiEventFlow.collectLatest {
@@ -99,7 +105,6 @@ fun DailyFormScreen(
             title = "Daily Form",
             popBackStack = {
                 navController.popBackStack()
-                navController.navigate(Screens.HomeScreen.route)
             },
             onSaveClicked = {
                 scope.launch {
@@ -107,127 +112,171 @@ fun DailyFormScreen(
                     if (remainingAgnas.isEmpty()) {
                         delay(1000)
                         navController.popBackStack()
-                        navController.navigate(Screens.HomeScreen.route)
                     }
                 }
             }
         )
 
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp, horizontal = 5.dp)
-                    .padding(top = if (formId != -1L) 0.dp else 3.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = dateFormatter(date),
-                    fontSize = 20.sp,
-                    modifier = Modifier
-                        .weight(0.68f),
-                    textAlign = TextAlign.End
-                )
-                Box(
-                    modifier = Modifier.weight(0.32f),
-                    contentAlignment = Alignment.CenterEnd
+        if (agnasSize == 0) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    if (formId != -1L) {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    val id = vm.getIdByDate()
-                                    navController.navigate("single_day_report_screen/${id}")
-                                }
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outlined_report_icon),
-                                contentDescription = "report btn"
-                            )
+                    Text(text = "No Agnas are added.", fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "First add agna.", fontSize = 18.sp)
+                }
+            }
+        } else {
+
+            Column {
+                Notice(
+                    text = "Swipe agna right or left to fill the form",
+                    isNoticeVisible = isNoticeVisible,
+                    leftArrowColor = Green
+                )
+
+                DateRow(
+                    date = date,
+                    formId = formId,
+                    onClick = {
+                        scope.launch {
+                            val id = vm.getIdByDate()
+                            navController.navigate("single_day_report_screen/${id}")
                         }
                     }
-                }
-            }
-            Text(
-                text = "Live Score = $liveScore",
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .padding(bottom = 10.dp)
-            )
-            LazyColumn {
-
-                item {
-                    Text(
-                        text = "Agnas:",
-                        modifier = Modifier
-                            .padding(10.dp),
-                        fontSize = 18.sp
-                    )
-                }
-                items(remainingAgnas) { agna ->
-                    DailyAgnaItem(
-                        agna,
-                        agnaProcessed = { palai ->
-                            vm.agnaProcessed(agna, palai, false)
-                        },
-                        isAgnaProcessed = false
-                    )
-                }
-
-                item {
-                    Text(
-                        text = "Agna Palan:",
-                        modifier = Modifier
-                            .padding(10.dp),
-                        fontSize = 18.sp
-                    )
-                }
-                items(
-                    processedAgnaPalanList,
-                    key = { it.id }
                 )
-                { agna ->
-                    DailyAgnaItem(
-                        agna,
-                        agnaProcessed = { palai ->
-                            vm.agnaProcessed(agna, palai, true)
-                        },
-                        isAgnaProcessed = true
+
+                Text(
+                    text = "Live Score = $liveScore",
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(start = 10.dp, bottom = 10.dp)
+                )
+                LazyColumn {
+
+                    item {
+                        Text(
+                            text = "Agnas:",
+                            modifier = Modifier
+                                .padding(10.dp),
+                            fontSize = 18.sp
+                        )
+                    }
+                    items(remainingAgnas) { agna ->
+                        DailyAgnaItem(
+                            agna,
+                            agnaProcessed = { palai ->
+                                vm.agnaProcessed(agna, palai, false)
+                            },
+                            isAgnaProcessed = false
+                        )
+                    }
+
+                    item {
+                        Text(
+                            text = "Agna Palan:",
+                            modifier = Modifier
+                                .padding(10.dp),
+                            fontSize = 18.sp
+                        )
+                    }
+                    items(
+                        processedAgnaPalanList,
+                        key = { it.id }
                     )
+                    { agna ->
+                        DailyAgnaItem(
+                            agna,
+                            agnaProcessed = { palai ->
+                                vm.agnaProcessed(agna, palai, true)
+                            },
+                            isAgnaProcessed = true
+                        )
+                    }
+
+                    item {
+                        Text(
+                            text = "Agna Lop:",
+                            modifier = Modifier
+                                .padding(10.dp),
+                            fontSize = 18.sp
+                        )
+                    }
+                    items(
+                        processedAgnaLopList,
+                        key = { it.id }
+                    ) { agna ->
+                        DailyAgnaItem(
+                            agna,
+                            agnaProcessed = { palai ->
+                                vm.agnaProcessed(agna, palai, true)
+                            },
+                            isAgnaProcessed = true
+                        )
+                    }
+
                 }
 
-                item {
-                    Text(
-                        text = "Agna Lop:",
-                        modifier = Modifier
-                            .padding(10.dp),
-                        fontSize = 18.sp
-                    )
-                }
-                items(
-                    processedAgnaLopList,
-                    key = { it.id }
-                ) { agna ->
-                    DailyAgnaItem(
-                        agna,
-                        agnaProcessed = { palai ->
-                            vm.agnaProcessed(agna, palai, true)
-                        },
-                        isAgnaProcessed = true
-                    )
+                if (isLoadingAnimationVisible) {
+                    LoadingAnimation(message = "Saving...")
                 }
 
             }
-
-            if (isLoadingAnimationVisible) {
-                LoadingAnimation(message = "Saving...")
-            }
-
         }
     }
 
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DateRow(date: LocalDate, formId: Long, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 5.dp)
+            .padding(top = if (formId != -1L) 0.dp else 3.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.weight(0.1f).padding(3.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            if (formId != -1L) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outlined_report_icon),
+                    contentDescription = "report btn",
+                    tint = MaterialTheme.colorScheme.background
+                )
+            }
+        }
+        Text(
+            text = dateFormatter(date),
+            fontSize = 20.sp,
+            modifier = Modifier
+                .weight(0.8f),
+            textAlign = TextAlign.Center
+        )
+        Box(
+            modifier = Modifier.weight(0.1f),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            if (formId != -1L) {
+                IconButton(
+                    onClick = {
+                        onClick()
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outlined_report_icon),
+                        contentDescription = "report btn"
+                    )
+                }
+            }
+        }
+    }
 }
 
 
@@ -267,7 +316,7 @@ private fun DailyAgnaItem(
         },
         icon = {
             Text(
-                text = "Palai",
+                text = "Agna Palan",
                 color = Color.White,
                 modifier = Modifier.padding(end = 20.dp),
                 fontSize = 20.sp
@@ -282,7 +331,7 @@ private fun DailyAgnaItem(
         },
         icon = {
             Text(
-                text = "Na Palai",
+                text = "Agna Lop",
                 color = Color.White,
                 modifier = Modifier.padding(start = 20.dp),
                 fontSize = 20.sp
@@ -294,7 +343,7 @@ private fun DailyAgnaItem(
     SwipeableActionsBox(
         startActions = listOf(palai),
         endActions = listOf(naPalai),
-        swipeThreshold = 100.dp,
+        swipeThreshold = 150.dp,
         modifier = Modifier.padding(bottom = 10.dp)
     ) {
 
@@ -367,7 +416,7 @@ private fun DailyAgnaItem(
                     AnimatedVisibility(visible = dIsDesVisible) {
                         Column(Modifier.fillMaxWidth()) {
 
-                            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Divider(color = MaterialTheme.colorScheme.background)
 
                             Text(
                                 text = "Des - ${dailyAgna.description}",
@@ -390,14 +439,7 @@ private fun DailyAgnaItem(
                                 color = textColor
                             )
 
-//                        Text(
-//                            text = "Always palay che? - ${if (dailyAgna.alwaysPalayChe) "YES" else "NO"}",
-//                            modifier = Modifier.padding(top = 10.dp),
-//                            fontSize = 18.sp,
-//                            color = textColor
-//                        )
-
-                            Spacer(modifier = Modifier.height(5.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
                         }
                     }

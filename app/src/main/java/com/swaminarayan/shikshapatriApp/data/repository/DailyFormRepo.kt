@@ -1,6 +1,5 @@
 package com.swaminarayan.shikshapatriApp.data.repository
 
-import android.util.Log
 import com.swaminarayan.shikshapatriApp.data.data_source.DailyFormDAO
 import com.swaminarayan.shikshapatriApp.domain.models.DailyForm
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +15,10 @@ class DailyFormRepo(
 
     suspend fun dailyFormList(): List<DailyForm> {
         return dao.dailyFormList()
+    }
+
+    suspend fun getDailyFormBetweenDays(firstDay: LocalDate, lastDay: LocalDate): List<DailyForm> {
+        return dao.getDailyFormBetweenDays(firstDay, lastDay)
     }
 
     suspend fun getIdByDate(date: LocalDate): DailyForm? {

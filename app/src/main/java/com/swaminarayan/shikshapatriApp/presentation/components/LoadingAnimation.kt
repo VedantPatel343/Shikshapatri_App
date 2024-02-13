@@ -82,7 +82,7 @@ fun LoadingAnimation(
                 .background(backGroundColor),
             contentAlignment = Alignment.Center
         ) {
-            Column (horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row {
                     circleValues.forEachIndexed { index, value ->
                         Box(
@@ -103,10 +103,10 @@ fun LoadingAnimation(
 
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = message, color = loadingColor, fontSize = 25.sp)
-                
+
             }
         }
     }

@@ -27,7 +27,7 @@ class DailyAgnaListConverter {
     }
 
     @TypeConverter
-    fun jsonToList(string: String) : List<DailyAgna> {
+    fun jsonToList(string: String): List<DailyAgna> {
         return Gson().fromJson(string, Array<DailyAgna>::class.java).toList()
     }
 }

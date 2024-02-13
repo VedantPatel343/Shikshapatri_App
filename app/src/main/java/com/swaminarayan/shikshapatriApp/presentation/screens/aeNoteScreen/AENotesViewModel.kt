@@ -18,7 +18,7 @@ import javax.inject.Inject
 class AENotesViewModel @Inject constructor(
     private val repo: NoteRepo,
     savedStateHandle: SavedStateHandle
-): ViewModel() {
+) : ViewModel() {
 
     private val _des: MutableStateFlow<String> = MutableStateFlow("")
     val des = _des.map { it }.stateIn(

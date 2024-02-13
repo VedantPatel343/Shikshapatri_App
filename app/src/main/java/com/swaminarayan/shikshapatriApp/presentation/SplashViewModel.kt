@@ -15,6 +15,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
+//@HiltViewModel
 class SplashViewModel @Inject constructor(
     private val dsRepo: DSRepo
 ) : ViewModel() {
@@ -31,18 +32,17 @@ class SplashViewModel @Inject constructor(
     }
 
     private fun checkLocalDateMonday() {
+        val today = LocalDate.now()
         val mondayValue = DayOfWeek.MONDAY.value
-        val todayWeekDayValue = LocalDate.now().dayOfWeek.value
+        val todayWeekDayValue = today.dayOfWeek.value
 
-        if (todayWeekDayValue != mondayValue) {
-            val balance = todayWeekDayValue - mondayValue
-            val firstDay = LocalDate.now().minusDays(balance.toLong())
-            val lastDay = firstDay.plusDays(6)
+        val balance = todayWeekDayValue - mondayValue
+        val firstDay = today.minusDays(balance.toLong())
+        val lastDay = firstDay.plusDays(6)
 
-            viewModelScope.launch(Dispatchers.IO) {
-                dsRepo.updateHomeFirstDay(firstDay.toString())
-                dsRepo.updateHomeLastDay(lastDay.toString())
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            dsRepo.updateHomeFirstDay(firstDay.toString())
+            dsRepo.updateHomeLastDay(lastDay.toString())
         }
     }
 

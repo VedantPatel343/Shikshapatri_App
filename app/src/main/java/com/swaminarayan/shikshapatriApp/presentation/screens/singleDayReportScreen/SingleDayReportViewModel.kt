@@ -28,8 +28,8 @@ class SingleDayReportViewModel @Inject constructor(
 
     var totalAgnas = 0L
     var date: LocalDate = LocalDate.now()
-    var agnaPalanList : MutableList<Agna> = mutableListOf()
-    var agnaLopList : MutableList<Agna> = mutableListOf()
+    var agnaPalanList: MutableList<Agna> = mutableListOf()
+    var agnaLopList: MutableList<Agna> = mutableListOf()
     var totalAgnaPalanPoints = 0L
     var totalAgnaLopPoints = 0L
 

@@ -102,7 +102,7 @@ class AEAgnaViewModel @Inject constructor(
                             _rajipoPoints.value = agna.rajipoPoints.toString()
                             _alwaysPalayChe.value = agna.alwaysPalayChe
                         }
-                    }  catch (e: Exception) {
+                    } catch (e: Exception) {
                         Log.i("exceptionCaught", "AEAgna VM: $e")
                     }
                 }
