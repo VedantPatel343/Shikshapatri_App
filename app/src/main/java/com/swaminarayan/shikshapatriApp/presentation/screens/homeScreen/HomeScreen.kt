@@ -165,7 +165,6 @@ fun HomeScreen(
                             scope.launch {
                                 val id = vm.getIdByDate(date)
                                 navController.navigate("daily_form_screen/${id}/$date")
-//                            navController.popBackStack()
                             }
                         },
                         onNextClick = {

@@ -122,10 +122,10 @@ fun Shikshapatri(maharaj: Int, guruji: Int) {
         bottomBar = {
             BottomNavigation(navController)
         }
-    ) {
+    ) { paddingValues ->
 
         NavHost(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = Screens.HomeScreen.route
         ) {

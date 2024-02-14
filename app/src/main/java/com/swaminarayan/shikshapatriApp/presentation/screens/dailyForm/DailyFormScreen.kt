@@ -107,11 +107,15 @@ fun DailyFormScreen(
                 navController.popBackStack()
             },
             onSaveClicked = {
-                scope.launch {
-                    vm.onFormFilledClick()
-                    if (remainingAgnas.isEmpty()) {
-                        delay(1000)
-                        navController.popBackStack()
+                if (agnasSize == 0) {
+                    showToast(context, "No Agnas are added.", false)
+                } else {
+                    scope.launch {
+                        vm.onFormFilledClick()
+                        if (remainingAgnas.isEmpty()) {
+                            delay(1000)
+                            navController.popBackStack()
+                        }
                     }
                 }
             }
@@ -241,7 +245,9 @@ fun DateRow(date: LocalDate, formId: Long, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.weight(0.1f).padding(3.dp),
+            modifier = Modifier
+                .weight(0.1f)
+                .padding(3.dp),
             contentAlignment = Alignment.CenterEnd
         ) {
             if (formId != -1L) {
