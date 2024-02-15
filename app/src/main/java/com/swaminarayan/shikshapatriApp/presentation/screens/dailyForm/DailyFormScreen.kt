@@ -40,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
@@ -85,7 +84,6 @@ fun DailyFormScreen(
         isNoticeVisible = false
     }
 
-    val liveScore by vm.liveScore.collectAsStateWithLifecycle()
     val date = vm.date
     val formId = vm.formId
 
@@ -152,12 +150,6 @@ fun DailyFormScreen(
                     }
                 )
 
-                Text(
-                    text = "Live Score = $liveScore",
-                    fontSize = 20.sp,
-                    modifier = Modifier
-                        .padding(start = 10.dp, bottom = 10.dp)
-                )
                 LazyColumn {
 
                     item {
@@ -349,7 +341,7 @@ private fun DailyAgnaItem(
     SwipeableActionsBox(
         startActions = listOf(palai),
         endActions = listOf(naPalai),
-        swipeThreshold = 150.dp,
+        swipeThreshold = 120.dp,
         modifier = Modifier.padding(bottom = 10.dp)
     ) {
 

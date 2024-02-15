@@ -18,11 +18,7 @@ import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -42,13 +38,6 @@ class DailyFormViewModel @Inject constructor(
     val remainingAgnas = mutableStateListOf<DailyAgnaHelperClass>()
 
     var isLoadingAnimationVisible = false
-
-    private val _liveScore: MutableStateFlow<Int> = MutableStateFlow(0)
-    val liveScore = _liveScore.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0
-    )
 
     var date: LocalDate = LocalDate.now()
     var formId = -1L
@@ -92,9 +81,6 @@ class DailyFormViewModel @Inject constructor(
                         alwaysPalayChe = agna.alwaysPalayChe,
                         palai = agnaPalai
                     )
-                    if (agnaPalai == true) {
-                        _liveScore.value += agna.rajipoPoints
-                    }
                     processedAgnas.add(dailyAgna)
                 } else {
                     val dailyAgna = DailyAgnaHelperClass(
@@ -131,7 +117,6 @@ class DailyFormViewModel @Inject constructor(
                     rajipoPoints = agna.rajipoPoints,
                     palai = true
                 )
-                _liveScore.value += agna.rajipoPoints
                 processedAgnas.add(dailyAgna)
             } else {
                 val dailyAgna = DailyAgnaHelperClass(
@@ -208,27 +193,15 @@ class DailyFormViewModel @Inject constructor(
             if (isAgnaProcessed) {
 
                 val processedAgna = processedAgnas.find { it.id == dailyAgna.id }
-                var isValid = false
-                if (processedAgna?.palai == false && palai) {
-                    isValid = true
-                    _liveScore.value += dailyAgna.rajipoPoints
-                } else if (processedAgna?.palai == true && !palai) {
-                    isValid = true
-                    _liveScore.value -= dailyAgna.rajipoPoints
-                }
-
-                if (isValid) {
-                    processedAgnas.removeIf { it.id == processedAgna?.id }
+                if (
+                    processedAgna?.palai == false && palai
+                    || processedAgna?.palai == true && !palai
+                ) {
+                    processedAgnas.removeIf { it.id == processedAgna.id }
                     processedAgnas.add(dailyAgna.copy(palai = palai))
                 }
 
             } else {
-
-                if (palai) {
-                    _liveScore.value += dailyAgna.rajipoPoints
-                } else {
-                    _liveScore.value -= dailyAgna.rajipoPoints
-                }
                 remainingAgnas.removeIf { it.id == dailyAgna.id }
                 processedAgnas.add(dailyAgna.copy(palai = palai))
             }
