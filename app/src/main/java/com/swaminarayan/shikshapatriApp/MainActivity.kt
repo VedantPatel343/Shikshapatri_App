@@ -78,6 +78,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
+                    // remove notes section from home screen and add chesta, orda, etc, from youtube api.
+
                     Shikshapatri(maharaj, guruji)
                 }
             }
