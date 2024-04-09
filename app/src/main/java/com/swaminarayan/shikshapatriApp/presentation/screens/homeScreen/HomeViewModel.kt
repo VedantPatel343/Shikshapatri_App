@@ -8,15 +8,16 @@ import com.swaminarayan.shikshapatriApp.data.repository.DSRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
 import com.swaminarayan.shikshapatriApp.data.repository.NoteRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Note
+import com.swaminarayan.shikshapatriApp.utils.launchFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
@@ -31,98 +32,100 @@ class HomeViewModel @Inject constructor(
     private val dsRepo: DSRepo
 ) : ViewModel() {
 
-    private val _slogan = MutableStateFlow("")
-    val slogan = _slogan.map { it }.stateIn(
+    private val _state = MutableStateFlow(
+        initialUiState()
+    )
+    val state = combine(
+        _state,
+        fetchData()
+    ) { internalState, _ ->
+        internalState
+    }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        ""
+        SharingStarted.WhileSubscribed(),
+        initialUiState()
     )
 
-    private val _notes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
-    val notes = _notes.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList()
-    )
+    private fun fetchData() = launchFlow {
+        val dates = getFirstLastDays()
+        setUpList(dates.first, dates.second)
 
-    private val _firstDayOfWeek: MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
-    val firstDayOfWeek = _firstDayOfWeek.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        LocalDate.now()
-    )
+        dsRepo.getSLogan().onEach { slogan ->
+            _state.update {
+                it.copy(slogan = slogan)
+            }
+        }.launchIn(viewModelScope)
+        notesRepo.getAllNotes().onEach { notes ->
+            _state.update {
+                it.copy(notes = notes)
+            }
+        }.launchIn(viewModelScope)
+        dsRepo.getHomeFirstDay().onEach { date ->
+            _state.update {
+                it.copy(firstDay = LocalDate.parse(date))
+            }
+        }.launchIn(viewModelScope)
+        dsRepo.getHomeLastDay().onEach { date ->
+            _state.update {
+                it.copy(lastDay = LocalDate.parse(date))
+            }
+        }.launchIn(viewModelScope)
+    }
 
-    private val _lastDayOfWeek: MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
-    val lastDayOfWeek = _lastDayOfWeek.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        LocalDate.now()
-    )
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.ChangeFlagValue -> {
+                _state.update {
+                    it.copy(flag = false)
+                }
+            }
 
-    private val _dailyFormDateList: MutableStateFlow<MutableList<LocalDate>> =
-        MutableStateFlow(mutableListOf())
-    val dailyFormDateList = _dailyFormDateList.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        mutableListOf()
-    )
+            is HomeEvent.UpdateSlogan -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    dsRepo.updateSlogan(event.slogan)
+                }
+            }
 
-    private var notesJob: Job? = null
-    private var firstDayJob: Job? = null
-    private var lastDayJob: Job? = null
-    private var sloganJob: Job? = null
+            is HomeEvent.OnNextDateClicked -> {
+                viewModelScope.launch {
+                    setUpList(
+                        firstDay = state.value.firstDay.plusDays(7),
+                        lastDay = state.value.lastDay.plusDays(7)
+                    )
+                    _state.update {
+                        it.copy(
+                            firstDay = state.value.firstDay.plusDays(7),
+                            lastDay = state.value.lastDay.plusDays(7)
+                        )
+                    }
+                }
+            }
 
-    var flag = true
-
-    init {
-        viewModelScope.launch {
-            getFirstDay()
-            getLastDay()
-            getSlogan()
-            getNotes()
-
-            val days = getFirstLastDays()
-            setUpList(firstDay = days.first, lastDay = days.second)
+            is HomeEvent.OnPrevDateClicked -> {
+                viewModelScope.launch {
+                    setUpList(
+                        firstDay = state.value.firstDay.minusDays(7),
+                        lastDay = state.value.lastDay.minusDays(7)
+                    )
+                    _state.update {
+                        it.copy(
+                            firstDay = state.value.firstDay.minusDays(7),
+                            lastDay = state.value.lastDay.minusDays(7)
+                        )
+                    }
+                }
+            }
         }
     }
 
-    private fun getSlogan() {
-        sloganJob?.cancel()
-        sloganJob = dsRepo.getSLogan().onEach {
-            _slogan.value = it
-        }.launchIn(viewModelScope)
-    }
-
-    private fun getNotes() {
-        notesJob?.cancel()
-        notesJob = notesRepo.getAllNotes()
-            .onEach { _notes.value = it }
-            .launchIn(viewModelScope)
-    }
-
-    private fun getLastDay() {
-        lastDayJob?.cancel()
-        lastDayJob = dsRepo.getHomeLastDay().onEach {
-            _lastDayOfWeek.value = LocalDate.parse(it)
-        }.launchIn(viewModelScope)
-    }
-
-    private fun getFirstDay() {
-        firstDayJob?.cancel()
-        firstDayJob = dsRepo.getHomeFirstDay().onEach {
-            _firstDayOfWeek.value = LocalDate.parse(it)
-        }.launchIn(viewModelScope)
-    }
-
-    fun setUpList(firstDay: LocalDate, lastDay: LocalDate) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dailyFormDateList.value.clear()
-            dailyFormRepo.getDailyFormBetweenDays(
-                firstDay = firstDay,
-                lastDay = lastDay
-            ).forEach { form ->
-                _dailyFormDateList.value.add(form.date)
-            }
+    suspend fun setUpList(firstDay: LocalDate, lastDay: LocalDate) {
+        _state.update { state ->
+            state.copy(
+                dailyFormDateList = dailyFormRepo.getDailyFormBetweenDays(
+                    firstDay = firstDay,
+                    lastDay = lastDay
+                ).map { it.date }
+            )
         }
     }
 
@@ -130,30 +133,6 @@ class HomeViewModel @Inject constructor(
         return withContext(Dispatchers.IO) {
             val form = dailyFormRepo.getIdByDate(date)
             form?.id ?: -1L
-        }
-    }
-
-    fun onNextDateClicked() {
-        setUpList(
-            firstDay = _firstDayOfWeek.value.plusDays(7),
-            lastDay = _lastDayOfWeek.value.plusDays(7)
-        )
-        _firstDayOfWeek.value = _firstDayOfWeek.value.plusDays(7)
-        _lastDayOfWeek.value = _lastDayOfWeek.value.plusDays(7)
-    }
-
-    fun onPrevDateClicked() {
-        setUpList(
-            firstDay = _firstDayOfWeek.value.minusDays(7),
-            lastDay = _lastDayOfWeek.value.minusDays(7)
-        )
-        _firstDayOfWeek.value = _firstDayOfWeek.value.minusDays(7)
-        _lastDayOfWeek.value = _lastDayOfWeek.value.minusDays(7)
-    }
-
-    fun updateSloganText(slogan: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dsRepo.updateSlogan(slogan)
         }
     }
 
@@ -168,8 +147,23 @@ class HomeViewModel @Inject constructor(
         return Pair(firstDay, lastDay)
     }
 
-    fun changeFlagValue() {
-        flag = false
-    }
+    private fun initialUiState() =
+        HomeUiState(
+            firstDay = LocalDate.now(),
+            lastDay = LocalDate.now(),
+            slogan = "",
+            notes = emptyList(),
+            dailyFormDateList = emptyList(),
+            flag = true
+        )
+
+    data class HomeUiState(
+        val firstDay: LocalDate,
+        val lastDay: LocalDate,
+        val slogan: String,
+        val notes: List<Note>,
+        val dailyFormDateList: List<LocalDate>,
+        val flag: Boolean
+    )
 
 }

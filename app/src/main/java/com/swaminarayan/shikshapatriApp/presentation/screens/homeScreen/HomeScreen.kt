@@ -75,38 +75,33 @@ fun HomeScreen(
     guruji: Int
 ) {
 
+    val state by vm.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val notes by vm.notes.collectAsStateWithLifecycle()
-
     var showDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    val sloganText by vm.slogan.collectAsStateWithLifecycle()
-    val firstDayOfWeek by vm.firstDayOfWeek.collectAsStateWithLifecycle()
-    val lastDayOfWeek by vm.lastDayOfWeek.collectAsStateWithLifecycle()
     val calenderData = CalenderDataSource()
-    val visibleDateList = calenderData.getVisibleDates(startDate = firstDayOfWeek)
-    val dateList by vm.dailyFormDateList.collectAsStateWithLifecycle()
+    val visibleDateList = calenderData.getVisibleDates(startDate = state.firstDay)
 
     LaunchedEffect(key1 = true) {
-        val flag = vm.flag
+        val flag = state.flag
         if (!flag) {
-            vm.setUpList(firstDayOfWeek, lastDayOfWeek)
+            vm.setUpList(state.firstDay, state.lastDay)
         }
         if (flag) {
-            vm.changeFlagValue()
+            vm.onEvent(HomeEvent.ChangeFlagValue)
         }
     }
 
-    val dates = if (firstDayOfWeek == LocalDate.now()) {
+    val dates = if (state.firstDay == LocalDate.now()) {
         dateFormatter(LocalDate.now())
     } else {
-        "${dateFormatter(firstDayOfWeek)}   -   ${
+        "${dateFormatter(state.firstDay)}   -   ${
             dateFormatter(
                 if (visibleDateList.contains(LocalDate.now()))
                     LocalDate.now()
                 else
-                    lastDayOfWeek
+                    state.lastDay
             )
         }"
     }
@@ -155,7 +150,7 @@ fun HomeScreen(
                     onLongClick = {
                         showDialog = true
                     },
-                    text = sloganText
+                    text = state.slogan
                 )
                 Box(modifier = Modifier.padding(horizontal = 5.dp)) {
                     Calender(
@@ -168,14 +163,14 @@ fun HomeScreen(
                             }
                         },
                         onNextClick = {
-                            vm.onNextDateClicked()
+                            vm.onEvent(HomeEvent.OnNextDateClicked)
                         },
                         onPreviousClick = {
-                            vm.onPrevDateClicked()
+                            vm.onEvent(HomeEvent.OnPrevDateClicked)
                         },
                         showPrevNextBtn = true,
                         showTickMarks = {
-                            dateList.contains(it)
+                            state.dailyFormDateList.contains(it)
                         }
                     )
                 }
@@ -194,10 +189,10 @@ fun HomeScreen(
                     UpdateTextDialog(
                         onDismissClicked = { showDialog = false },
                         onSaveClicked = {
-                            vm.updateSloganText(it)
+                            vm.onEvent(HomeEvent.UpdateSlogan(it))
                             showDialog = false
                         },
-                        textValue = sloganText
+                        textValue = state.slogan
                     )
                 }
 
@@ -205,7 +200,7 @@ fun HomeScreen(
             }
 
             itemsIndexed(
-                items = notes,
+                items = state.notes,
                 key = { _, note ->
                     note.id
                 }
