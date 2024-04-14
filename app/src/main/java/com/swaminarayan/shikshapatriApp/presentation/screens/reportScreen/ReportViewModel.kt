@@ -8,14 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Agna
+import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
 import com.swaminarayan.shikshapatriApp.domain.models.DailyForm
 import com.swaminarayan.shikshapatriApp.domain.models.ReportAgnaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -29,89 +31,84 @@ class ReportViewModel @Inject constructor(
     private val agnaRepo: AgnaRepo
 ) : ViewModel() {
 
-    var totalAgnas = 0
-
-    private val _agnaPalanPoints: MutableStateFlow<Long> = MutableStateFlow(0)
-    val agnaPalanPoints = _agnaPalanPoints.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0
+    private val _state = MutableStateFlow(
+        initialUiState()
     )
-
-    private val _agnaLopPoints: MutableStateFlow<Long> = MutableStateFlow(0)
-    val agnaLopPoints = _agnaLopPoints.map { it }.stateIn(
+    val state = combine(
+        _state,
+        _state
+    ) { state, _ ->
+        state
+    }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0
-    )
-
-    private var dailyFormList = emptyList<DailyForm>()
-
-    private val _currentMonth: MutableStateFlow<Month> = MutableStateFlow(LocalDate.now().month)
-    val currentMonth = _currentMonth.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        LocalDate.now().month
-    )
-
-    private val today = LocalDate.now()
-    private val _date15: MutableStateFlow<LocalDate> =
-        MutableStateFlow(LocalDate.of(today.year, today.month, 15))
-    val date15 = _date15.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        LocalDate.of(today.year, today.month, 15)
-    )
-
-    private val _monthlyForms: MutableStateFlow<MutableList<LocalDate>> =
-        MutableStateFlow(mutableListOf())
-    val monthlyForms = _monthlyForms.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        mutableListOf()
-    )
-
-    private val _reportAgnaItemList: MutableStateFlow<MutableList<ReportAgnaItem>> =
-        MutableStateFlow(mutableListOf())
-    val reportAgnaItemList = _reportAgnaItemList.map { it }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        mutableListOf()
+        SharingStarted.WhileSubscribed(),
+        initialUiState()
     )
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            totalAgnas = agnaRepo.agnas().size
-            dailyFormList = dailyFormRepo.dailyFormList()
-
-            setUpList(dailyFormList)
+            _state.update {
+                it.copy(
+                    totalAgnas = agnaRepo.agnas().size,
+                    dailyFormList = dailyFormRepo.dailyFormList()
+                )
+            }
+            setUpList(_state.value.dailyFormList)
         }
     }
 
     private fun setUpList(dailyForms: List<DailyForm>) {
         viewModelScope.launch(Dispatchers.IO) {
-            _monthlyForms.value.clear()
-            _reportAgnaItemList.value.clear()
-            _agnaPalanPoints.value = 0L
-            _agnaLopPoints.value = 0L
+            _state.update {
+                it.copy(
+                    monthlyForms = mutableListOf(),
+                    reportAgnaItemList = mutableListOf(),
+                    agnaPalanPoints = 0,
+                    agnaLopPoints = 0
+                )
+            }
 
             dailyForms.forEach { form ->
-                if (form.date.month == _currentMonth.value && form.date.year == _date15.value.year) {
-                    _monthlyForms.value.add(form.date)
-                    form.dailyAgnas.forEach {
-                        val agna = agnaRepo.getAgnaById(it.id)
+                if (form.date.month == _state.value.currentMonth && form.date.year == _state.value.date15.year) {
+                    val list = _state.value.monthlyForms
+                    list.add(form.date)
+                    _state.update {
+                        it.copy(monthlyForms = list)
+                    }
+
+                    form.dailyAgnas.forEach { dailyAgna ->
+                        val agna = agnaRepo.getAgnaById(dailyAgna.id)
                         try {
                             if (agna != null) {
                                 setReportItemModelList(
                                     agna = agna,
-                                    palai = it.palai,
-                                    points = (agna.rajipoPoints).toLong()
+                                    dailyAgna = dailyAgna,
+                                    points = getTotalPoints(
+                                        agna,
+                                        dailyAgna
+                                    )
                                 )
 
-                                if (it.palai == true)
-                                    _agnaPalanPoints.value += agna.rajipoPoints
+                                if (dailyAgna.palai == true)
+                                    _state.update {
+                                        it.copy(
+                                            agnaPalanPoints = _state.value.agnaPalanPoints +
+                                                    getTotalPoints(
+                                                        agna,
+                                                        dailyAgna
+                                                    )
+                                        )
+                                    }
                                 else
-                                    _agnaLopPoints.value += agna.rajipoPoints
+                                    _state.update {
+                                        it.copy(
+                                            agnaLopPoints = _state.value.agnaLopPoints +
+                                                    getTotalPoints(
+                                                        agna,
+                                                        dailyAgna
+                                                    )
+                                        )
+                                    }
                             }
                         } catch (e: Exception) {
                             Log.i("exceptionCaught", "Report VM: $e")
@@ -123,58 +120,77 @@ class ReportViewModel @Inject constructor(
         }
     }
 
-    private fun setReportItemModelList(agna: Agna, palai: Boolean?, points: Long) {
-        val item = _reportAgnaItemList.value.find { it.agnaId == agna.id }
-        _reportAgnaItemList.value.removeAll { it.agnaId == agna.id }
+    private fun getTotalPoints(agna: Agna, dailyAgna: DailyAgna): Long {
+        return (agna.rajipoPoints * dailyAgna.count).toLong()
+    }
 
-        if (item != null) {
-            val reportItem = ReportAgnaItem(
+    private fun setReportItemModelList(agna: Agna, dailyAgna: DailyAgna, points: Long) {
+
+        val item = _state.value.reportAgnaItemList.find { it.agnaId == agna.id }
+        _state.value.reportAgnaItemList.removeAll { it.agnaId == agna.id }
+
+        val reportItem = if (item != null) {
+            ReportAgnaItem(
                 agnaId = item.agnaId,
                 agna = item.agna,
-                agnaLopPoints = if (palai == false) item.agnaLopPoints + points else item.agnaLopPoints,
-                agnaPalanPoints = if (palai == true) item.agnaPalanPoints + points else item.agnaPalanPoints,
+                agnaLopPoints = if (dailyAgna.palai == false) item.agnaLopPoints + points else item.agnaLopPoints,
+                agnaPalanPoints = if (dailyAgna.palai == true) item.agnaPalanPoints + points else item.agnaPalanPoints,
                 totalPoints = item.totalPoints + points
             )
-            _reportAgnaItemList.value.add(reportItem)
         } else {
-            val reportItem = ReportAgnaItem(
+            ReportAgnaItem(
                 agnaId = agna.id,
                 agna = agna.agna,
-                agnaLopPoints = if (palai == false) points else 0L,
-                agnaPalanPoints = if (palai == true) points else 0L,
+                agnaLopPoints = if (dailyAgna.palai == false) points else 0L,
+                agnaPalanPoints = if (dailyAgna.palai == true) points else 0L,
                 totalPoints = points
             )
-            _reportAgnaItemList.value.add(reportItem)
+        }
+        val list = _state.value.reportAgnaItemList
+        list.add(reportItem)
+        _state.update {
+            it.copy(reportAgnaItemList = list)
         }
     }
 
     fun onNextMonthClicked() {
         update15Date(true)
-        _currentMonth.value = _currentMonth.value.plus(1)
-        setUpList(dailyFormList)
+        _state.update {
+            it.copy(currentMonth = _state.value.currentMonth.plus(1))
+        }
+        setUpList(_state.value.dailyFormList)
     }
 
     private fun update15Date(onNextBtnClicked: Boolean) {
         val queryDate =
-            if (onNextBtnClicked) _date15.value.plusDays(30) else _date15.value.minusDays(30)
+            if (onNextBtnClicked)
+                _state.value.date15.plusDays(30)
+            else
+                _state.value.date15.minusDays(30)
 
-        val balance = if (queryDate > _date15.value) {
-            queryDate.dayOfMonth - _date15.value.dayOfMonth
+        val balance = if (queryDate > _state.value.date15) {
+            queryDate.dayOfMonth - _state.value.date15.dayOfMonth
         } else {
-            _date15.value.dayOfMonth - queryDate.dayOfMonth
+            _state.value.date15.dayOfMonth - queryDate.dayOfMonth
         }
 
-        _date15.value = if (queryDate > _date15.value) {
-            queryDate.minusDays(balance.toLong())
-        } else {
-            queryDate.plusDays(balance.toLong())
+        _state.update {
+            it.copy(
+                date15 = if (queryDate > _state.value.date15) {
+                    queryDate.minusDays(balance.toLong())
+                } else {
+                    queryDate.plusDays(balance.toLong())
+                }
+            )
         }
     }
 
     fun onPreviousMonthClicked() {
         update15Date(false)
-        _currentMonth.value = _currentMonth.value.minus(1)
-        setUpList(dailyFormList)
+        _state.update {
+            it.copy(currentMonth = _state.value.currentMonth.minus(1))
+        }
+        setUpList(_state.value.dailyFormList)
     }
 
     suspend fun getIdByDate(date: LocalDate): Long {
@@ -182,5 +198,30 @@ class ReportViewModel @Inject constructor(
             dailyFormRepo.getIdByDate(date)?.id!!
         }
     }
+
+    private fun initialUiState() =
+        ReportUiState(
+            totalAgnas = 0,
+            agnaPalanPoints = 0,
+            agnaLopPoints = 0,
+            dailyFormList = emptyList(),
+            currentMonth = LocalDate.now().month,
+            today = LocalDate.now(),
+            date15 = LocalDate.now(),
+            monthlyForms = mutableListOf(),
+            reportAgnaItemList = mutableListOf()
+        )
+
+    data class ReportUiState(
+        val totalAgnas: Int,
+        val agnaPalanPoints: Long,
+        val agnaLopPoints: Long,
+        val dailyFormList: List<DailyForm>,
+        val currentMonth: Month,
+        val today: LocalDate,
+        val date15: LocalDate,
+        val monthlyForms: MutableList<LocalDate>,
+        val reportAgnaItemList: MutableList<ReportAgnaItem>
+    )
 
 }

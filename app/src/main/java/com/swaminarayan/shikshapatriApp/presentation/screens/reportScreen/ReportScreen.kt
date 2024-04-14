@@ -47,19 +47,12 @@ fun ReportScreen(
 ) {
 
     val scope = rememberCoroutineScope()
-    val totalAgnas = vm.totalAgnas
-    val totalAgnaPalanPoints by vm.agnaPalanPoints.collectAsStateWithLifecycle()
-    val totalAgnaLopPoints by vm.agnaLopPoints.collectAsStateWithLifecycle()
-    val currentMonth by vm.currentMonth.collectAsStateWithLifecycle()
-    val date15 by vm.date15.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
 
     val pieChartList = listOf(
-        PieChartInput(Green, totalAgnaPalanPoints, "Agna Palan"),
-        PieChartInput(Red, totalAgnaLopPoints, "Agna Lop")
+        PieChartInput(Green, state.agnaPalanPoints, "Agna Palan"),
+        PieChartInput(Red, state.agnaLopPoints, "Agna Lop")
     )
-
-    val reportAgnaItems by vm.reportAgnaItemList.collectAsStateWithLifecycle()
-    val monthlyForms by vm.monthlyForms.collectAsStateWithLifecycle()
 
     Page(modifier = Modifier.padding(horizontal = 10.dp)) {
 
@@ -81,16 +74,16 @@ fun ReportScreen(
         LazyColumn {
             item {
                 Text(
-                    text = "$currentMonth days:",
+                    text = "${state.currentMonth}",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(15.dp))
 
-                Log.i("TAG", "ReportScreen: ${monthlyForms.toList()}")
+                Log.i("TAG", "ReportScreen: ${state.monthlyForms.toList()}")
 
-                AnimatedVisibility(visible = monthlyForms.toList().isEmpty()) {
+                AnimatedVisibility(visible = state.monthlyForms.toList().isEmpty()) {
                     Text(
                         text = "No forms filled.",
                         fontSize = 15.sp,
@@ -102,9 +95,9 @@ fun ReportScreen(
                     )
                 }
 
-                AnimatedVisibility(visible = monthlyForms.toList().isNotEmpty()) {
+                AnimatedVisibility(visible = state.monthlyForms.toList().isNotEmpty()) {
                     Calender(
-                        visibleDateList = monthlyForms.toList(),
+                        visibleDateList = state.monthlyForms.toList(),
                         centerText = "",
                         onDateClicked = {
                             scope.launch {
@@ -125,14 +118,14 @@ fun ReportScreen(
                     showArrowBtn = true,
                     onPreviousMonthClicked = { vm.onPreviousMonthClicked() },
                     onNextMonthClicked = { vm.onNextMonthClicked() },
-                    currentMonth = currentMonth.name,
-                    date15year = date15.year.toString()
+                    currentMonth = state.currentMonth.name,
+                    date15year = state.date15.year.toString()
                 )
             }
 
             item {
                 Text(
-                    text = "Total Agnas: $totalAgnas",
+                    text = "Total Agnas: ${state.totalAgnas}",
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -149,7 +142,7 @@ fun ReportScreen(
             }
 
             items(
-                items = reportAgnaItems.toList(),
+                items = state.reportAgnaItemList.toList(),
                 key = { it.agnaId }
             ) {
                 ReportAgnaItem(it, true)

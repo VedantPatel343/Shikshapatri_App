@@ -217,7 +217,7 @@ fun PieChart(
                         factor = -0.92f
                     }
 
-                    val percentage = (item.value / totalValue.toFloat() * 100).toInt()
+                    val percentage = getCeilOrFloorValue(item.value / totalValue.toFloat() * 100)
 
                     drawContext.canvas.nativeCanvas.apply {
                         if (percentage > 3) {
@@ -258,6 +258,16 @@ fun PieChart(
         Spacer(modifier = Modifier.height(spaceBetween))
         Spacer(modifier = Modifier.height(space.dp))
 
+    }
+}
+
+fun getCeilOrFloorValue(value: Float): Int {
+    val per = String.format("%.1f", value).toFloat()
+    val bal = String.format("%.1f", per - per.toInt()).toFloat()
+    return if (bal > 0.5) {
+        (value + 1).toInt()
+    } else {
+        value.toInt()
     }
 }
 

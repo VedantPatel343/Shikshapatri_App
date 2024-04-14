@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,7 +50,6 @@ import kotlinx.coroutines.flow.collectLatest
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllAgnaScreen(
     navController: NavHostController,
@@ -57,7 +57,7 @@ fun AllAgnaScreen(
 ) {
 
     val context = LocalContext.current
-    val agnas by vm.agnas.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
 
 
     var isNoticeVisible by rememberSaveable {
@@ -98,7 +98,7 @@ fun AllAgnaScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        if (agnas.isEmpty()) {
+        if (state.agnas.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(text = "No Agna is added.")
             }
@@ -110,7 +110,7 @@ fun AllAgnaScreen(
             )
             Spacer(modifier = Modifier.height(15.dp))
             LazyColumn {
-                items(agnas, key = { it.id }) { agna ->
+                items(state.agnas, key = { it.id }) { agna ->
                     AgnaItem(
                         agna,
                         editAgnaFun = {
@@ -196,32 +196,34 @@ fun AgnaItem(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
+                        Row(
                             Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
 
                             Text(
                                 text = agna.agna,
-                                fontSize = 20.sp
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .weight(9f)
                             )
 
-                            if (agna.slokNo != 0) {
-                                Text(
-                                    text = "Slok No - ${agna.slokNo}",
-                                    modifier = Modifier.padding(top = 10.dp),
-                                    fontSize = 20.sp
-                                )
-                            }
-
-                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(end = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 IconButton(
                                     onClick = {
                                         isDesVisible = !isDesVisible
@@ -243,7 +245,14 @@ fun AgnaItem(
 
 
                     AnimatedVisibility(visible = isDesVisible) {
-                        Column(Modifier.fillMaxWidth()) {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                        ) {
+
+                            Divider()
+                            Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
                                 text = "Des - ${agna.description}",
@@ -258,6 +267,12 @@ fun AgnaItem(
 
                             Text(
                                 text = "Rajipo Points - ${agna.rajipoPoints}",
+                                modifier = Modifier.padding(top = 10.dp),
+                                fontSize = 18.sp
+                            )
+
+                            Text(
+                                text = "Is counter? - ${if (agna.isCounter) "YES" else "NO"}",
                                 modifier = Modifier.padding(top = 10.dp),
                                 fontSize = 18.sp
                             )
