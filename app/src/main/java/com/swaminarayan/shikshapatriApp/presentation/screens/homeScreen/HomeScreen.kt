@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -257,7 +257,7 @@ private fun NotesItem(note: String, index: Int) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Slogan(onLongClick: () -> Unit, text: String) {
-    Divider(color = MaterialTheme.colorScheme.primary)
+    HorizontalDivider(color = MaterialTheme.colorScheme.primary)
     Text(
         text = text,
         fontSize = 18.sp,
@@ -272,7 +272,7 @@ fun Slogan(onLongClick: () -> Unit, text: String) {
             ),
         textAlign = TextAlign.Center
     )
-    Divider(color = MaterialTheme.colorScheme.primary)
+    HorizontalDivider(color = MaterialTheme.colorScheme.primary)
     Spacer(modifier = Modifier.height(15.dp))
 }
 
