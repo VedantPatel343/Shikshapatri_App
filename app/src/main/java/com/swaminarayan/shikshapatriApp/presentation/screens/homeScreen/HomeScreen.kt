@@ -191,7 +191,7 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(25.dp))
+                Spacer(modifier = Modifier.height(30.dp))
                 Text(
                     modifier = Modifier.padding(start = 10.dp),
                     text = "Notes:",
@@ -241,15 +241,22 @@ fun HomeScreen(
 
 @Composable
 private fun NotesItem(note: String, index: Int) {
-    Row(
-        Modifier
+    Card(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
-            .padding(horizontal = 10.dp)
+            .padding(bottom = 15.dp, start = 10.dp, end = 10.dp),
+        elevation = CardDefaults.cardElevation(3.dp),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
     ) {
-        Text(text = "$index.")
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(text = note)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            Text(text = "$index.")
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(text = note)
+        }
     }
 }
 
