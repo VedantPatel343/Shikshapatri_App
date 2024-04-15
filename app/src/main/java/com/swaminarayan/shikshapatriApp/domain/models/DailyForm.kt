@@ -14,7 +14,9 @@ data class DailyForm(
 
 data class DailyAgna(
     val id: Long = 0L,
-    val palai: Boolean?
+    val palai: Boolean?,
+    val count: Int,
+    val note: String
 )
 
 data class DailyAgnaHelperClass(
@@ -23,7 +25,9 @@ data class DailyAgnaHelperClass(
     val agna: String,
     val description: String,
     val author: String,
-    val slokNo: Int,
     val rajipoPoints: Int,
-    val alwaysPalayChe: Boolean
+    val alwaysPalayChe: Boolean,
+    val isCounter: Boolean,
+    val count: Int,
+    val note: String
 )

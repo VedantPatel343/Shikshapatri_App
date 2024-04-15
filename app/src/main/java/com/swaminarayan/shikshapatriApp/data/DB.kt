@@ -12,7 +12,11 @@ import com.swaminarayan.shikshapatriApp.domain.models.Note
 import com.swaminarayan.shikshapatriApp.utils.DailyAgnaListConverter
 import com.swaminarayan.shikshapatriApp.utils.LocalDateConverter
 
-@Database(entities = [Agna::class, DailyForm::class, Note::class], version = 7)
+@Database(
+    entities = [Agna::class, DailyForm::class, Note::class],
+    version = 8,
+    exportSchema = true
+)
 @TypeConverters(LocalDateConverter::class, DailyAgnaListConverter::class)
 abstract class DB : RoomDatabase() {
 

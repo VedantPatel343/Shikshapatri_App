@@ -8,7 +8,6 @@ import com.swaminarayan.shikshapatriApp.data.repository.DSRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
 import com.swaminarayan.shikshapatriApp.data.repository.NoteRepo
 import com.swaminarayan.shikshapatriApp.domain.models.Note
-import com.swaminarayan.shikshapatriApp.utils.launchFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,7 @@ class HomeViewModel @Inject constructor(
     )
     val state = combine(
         _state,
-        fetchData()
+        _state
     ) { internalState, _ ->
         internalState
     }.stateIn(
@@ -46,30 +45,32 @@ class HomeViewModel @Inject constructor(
         initialUiState()
     )
 
-    private fun fetchData() = launchFlow {
-        val dates = getFirstLastDays()
-        setUpList(dates.first, dates.second)
+    init {
+        viewModelScope.launch {
+            val dates = getFirstLastDays()
+            setUpList(dates.first, dates.second)
 
-        dsRepo.getSLogan().onEach { slogan ->
-            _state.update {
-                it.copy(slogan = slogan)
-            }
-        }.launchIn(viewModelScope)
-        notesRepo.getAllNotes().onEach { notes ->
-            _state.update {
-                it.copy(notes = notes)
-            }
-        }.launchIn(viewModelScope)
-        dsRepo.getHomeFirstDay().onEach { date ->
-            _state.update {
-                it.copy(firstDay = LocalDate.parse(date))
-            }
-        }.launchIn(viewModelScope)
-        dsRepo.getHomeLastDay().onEach { date ->
-            _state.update {
-                it.copy(lastDay = LocalDate.parse(date))
-            }
-        }.launchIn(viewModelScope)
+            dsRepo.getSLogan().onEach { slogan ->
+                _state.update {
+                    it.copy(slogan = slogan)
+                }
+            }.launchIn(viewModelScope)
+            notesRepo.getAllNotes().onEach { notes ->
+                _state.update {
+                    it.copy(notes = notes)
+                }
+            }.launchIn(viewModelScope)
+            dsRepo.getHomeFirstDay().onEach { date ->
+                _state.update {
+                    it.copy(firstDay = LocalDate.parse(date))
+                }
+            }.launchIn(viewModelScope)
+            dsRepo.getHomeLastDay().onEach { date ->
+                _state.update {
+                    it.copy(lastDay = LocalDate.parse(date))
+                }
+            }.launchIn(viewModelScope)
+        }
     }
 
     fun onEvent(event: HomeEvent) {
@@ -89,13 +90,13 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.OnNextDateClicked -> {
                 viewModelScope.launch {
                     setUpList(
-                        firstDay = state.value.firstDay.plusDays(7),
-                        lastDay = state.value.lastDay.plusDays(7)
+                        firstDay = _state.value.firstDay.plusDays(7),
+                        lastDay = _state.value.lastDay.plusDays(7)
                     )
                     _state.update {
                         it.copy(
-                            firstDay = state.value.firstDay.plusDays(7),
-                            lastDay = state.value.lastDay.plusDays(7)
+                            firstDay = _state.value.firstDay.plusDays(7),
+                            lastDay = _state.value.lastDay.plusDays(7)
                         )
                     }
                 }
@@ -104,13 +105,13 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.OnPrevDateClicked -> {
                 viewModelScope.launch {
                     setUpList(
-                        firstDay = state.value.firstDay.minusDays(7),
-                        lastDay = state.value.lastDay.minusDays(7)
+                        firstDay = _state.value.firstDay.minusDays(7),
+                        lastDay = _state.value.lastDay.minusDays(7)
                     )
                     _state.update {
                         it.copy(
-                            firstDay = state.value.firstDay.minusDays(7),
-                            lastDay = state.value.lastDay.minusDays(7)
+                            firstDay = _state.value.firstDay.minusDays(7),
+                            lastDay = _state.value.lastDay.minusDays(7)
                         )
                     }
                 }

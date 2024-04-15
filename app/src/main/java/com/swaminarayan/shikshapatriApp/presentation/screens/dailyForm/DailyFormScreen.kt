@@ -3,6 +3,8 @@ package com.swaminarayan.shikshapatriApp.presentation.screens.dailyForm
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +14,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -21,11 +32,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,15 +49,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.R
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
 import com.swaminarayan.shikshapatriApp.presentation.components.LoadingAnimation
 import com.swaminarayan.shikshapatriApp.presentation.components.Notice
+import com.swaminarayan.shikshapatriApp.presentation.components.OTF
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.presentation.components.TopBar2Btn
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
@@ -68,12 +87,17 @@ fun DailyFormScreen(
 ) {
 
     val context = LocalContext.current
-    val processedAgnaPalanList = vm.processedAgnas.toList().filter { it.palai == true }
-    val processedAgnaLopList = vm.processedAgnas.toList().filter { it.palai == false }
-    val remainingAgnas = vm.remainingAgnas.toList()
+    val state by vm.state.collectAsStateWithLifecycle()
+    val processedAgnaPalanList = state.processedAgnas.toList().filter { it.palai == true }
+    val processedAgnaLopList = state.processedAgnas.toList().filter { it.palai == false }
     val scope = rememberCoroutineScope()
-    val isLoadingAnimationVisible = vm.isLoadingAnimationVisible
-    val agnasSize = vm.agnas.size
+
+    var isNoteDialogVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val dIsNoteDialogVisible by remember {
+        derivedStateOf { isNoteDialogVisible }
+    }
 
     var isNoticeVisible by rememberSaveable {
         mutableStateOf(false)
@@ -83,9 +107,6 @@ fun DailyFormScreen(
         delay(6000)
         isNoticeVisible = false
     }
-
-    val date = vm.date
-    val formId = vm.formId
 
     LaunchedEffect(key1 = true) {
         vm.uiEventFlow.collectLatest {
@@ -105,12 +126,15 @@ fun DailyFormScreen(
                 navController.popBackStack()
             },
             onSaveClicked = {
-                if (agnasSize == 0) {
+                if (state.agnas.isEmpty()) {
                     showToast(context, "No Agnas are added.", false)
                 } else {
                     scope.launch {
-                        vm.onFormFilledClick()
-                        if (remainingAgnas.isEmpty()) {
+                        vm.onFormFilledClick(
+                            agnaPalanList = processedAgnaPalanList,
+                            agnaLopList = processedAgnaLopList
+                        )
+                        if (state.remainingAgnas.isEmpty()) {
                             delay(1000)
                             navController.popBackStack()
                         }
@@ -119,7 +143,7 @@ fun DailyFormScreen(
             }
         )
 
-        if (agnasSize == 0) {
+        if (state.agnas.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -140,8 +164,8 @@ fun DailyFormScreen(
                 )
 
                 DateRow(
-                    date = date,
-                    formId = formId,
+                    date = state.date,
+                    formId = state.formId,
                     onClick = {
                         scope.launch {
                             val id = vm.getIdByDate()
@@ -152,71 +176,132 @@ fun DailyFormScreen(
 
                 LazyColumn {
 
-                    item {
-                        Text(
-                            text = "Agnas:",
-                            modifier = Modifier
-                                .padding(10.dp),
-                            fontSize = 18.sp
-                        )
-                    }
-                    items(remainingAgnas) { agna ->
-                        DailyAgnaItem(
-                            agna,
-                            agnaProcessed = { palai ->
-                                vm.agnaProcessed(agna, palai, false)
-                            },
-                            isAgnaProcessed = false
-                        )
-                    }
-
-                    item {
-                        Text(
-                            text = "Agna Palan:",
-                            modifier = Modifier
-                                .padding(10.dp),
-                            fontSize = 18.sp
-                        )
-                    }
-                    items(
-                        processedAgnaPalanList,
-                        key = { it.id }
-                    )
-                    { agna ->
-                        DailyAgnaItem(
-                            agna,
-                            agnaProcessed = { palai ->
-                                vm.agnaProcessed(agna, palai, true)
-                            },
-                            isAgnaProcessed = true
-                        )
+                    if (state.remainingAgnas.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Agnas:",
+                                modifier = Modifier
+                                    .padding(10.dp),
+                                fontSize = 20.sp
+                            )
+                        }
+                        items(state.remainingAgnas) { agna ->
+                            DailyAgnaItem(
+                                agna,
+                                agnaProcessed = { palai, count ->
+                                    vm.agnaProcessed(agna, palai, false, count)
+                                },
+                                isAgnaProcessed = false,
+                                onCountAddClick = {},
+                                onCountSubClick = {},
+                                onAENoteClicked = {
+                                    vm.onNoteAgnaChanged(agna, false)
+                                    isNoteDialogVisible = !isNoteDialogVisible
+                                }
+                            )
+                        }
                     }
 
-                    item {
-                        Text(
-                            text = "Agna Lop:",
-                            modifier = Modifier
-                                .padding(10.dp),
-                            fontSize = 18.sp
-                        )
+                    if (processedAgnaPalanList.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Agna Palan:",
+                                modifier = Modifier
+                                    .padding(10.dp),
+                                fontSize = 20.sp
+                            )
+                        }
+                        items(
+                            processedAgnaPalanList,
+                            key = { it.id }
+                        ) { agna ->
+                            DailyAgnaItem(
+                                agna,
+                                agnaProcessed = { palai, count ->
+                                    vm.agnaProcessed(agna, palai, true, count)
+                                },
+                                isAgnaProcessed = true,
+                                onCountAddClick = {
+                                    vm.onCountChange(
+                                        dailyAgna = agna,
+                                        count = it,
+                                        agnaProcessed = true
+                                    )
+                                },
+                                onCountSubClick = {
+                                    vm.onCountChange(
+                                        dailyAgna = agna,
+                                        count = it,
+                                        agnaProcessed = true
+                                    )
+                                },
+                                onAENoteClicked = {
+                                    vm.onNoteAgnaChanged(agna, true)
+                                    isNoteDialogVisible = !isNoteDialogVisible
+                                }
+
+                            )
+                        }
                     }
-                    items(
-                        processedAgnaLopList,
-                        key = { it.id }
-                    ) { agna ->
-                        DailyAgnaItem(
-                            agna,
-                            agnaProcessed = { palai ->
-                                vm.agnaProcessed(agna, palai, true)
-                            },
-                            isAgnaProcessed = true
-                        )
+
+                    if (processedAgnaLopList.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Agna Lop:",
+                                modifier = Modifier
+                                    .padding(10.dp),
+                                fontSize = 20.sp
+                            )
+                        }
+                        items(
+                            processedAgnaLopList,
+                            key = { it.id }
+                        ) { agna ->
+                            DailyAgnaItem(
+                                agna,
+                                agnaProcessed = { palai, count ->
+                                    vm.agnaProcessed(agna, palai, true, count)
+                                },
+                                isAgnaProcessed = true,
+                                onCountAddClick = {
+                                    vm.onCountChange(
+                                        dailyAgna = agna,
+                                        count = it,
+                                        agnaProcessed = true
+                                    )
+                                },
+                                onCountSubClick = {
+                                    vm.onCountChange(
+                                        dailyAgna = agna,
+                                        count = it,
+                                        agnaProcessed = true
+                                    )
+                                },
+                                onAENoteClicked = {
+                                    vm.onNoteAgnaChanged(agna, true)
+                                    isNoteDialogVisible = !isNoteDialogVisible
+                                }
+
+                            )
+                        }
                     }
 
                 }
 
-                if (isLoadingAnimationVisible) {
+                if (state.isLoadingAnimeVisible) {
                     LoadingAnimation(message = "Saving...")
+                }
+
+                if (dIsNoteDialogVisible) {
+                    ShowNoteDialog(
+                        onDismissClicked = {
+                            isNoteDialogVisible = false
+                        },
+                        onSaveClicked = {
+                            vm.agnaNoteChanged(it)
+                        },
+                        note = state.noteAgna?.note ?: ""
+                    )
                 }
 
             }
@@ -227,7 +312,7 @@ fun DailyFormScreen(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun DateRow(date: LocalDate, formId: Long, onClick: () -> Unit) {
+fun DateRow(date: LocalDate, formId: Long?, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -281,9 +366,16 @@ fun DateRow(date: LocalDate, formId: Long, onClick: () -> Unit) {
 @Composable
 private fun DailyAgnaItem(
     dailyAgna: DailyAgnaHelperClass,
-    agnaProcessed: (palai: Boolean) -> Unit,
+    agnaProcessed: (palai: Boolean, count: Int) -> Unit,
+    onCountAddClick: (count: Int) -> Unit,
+    onCountSubClick: (count: Int) -> Unit,
+    onAENoteClicked: () -> Unit,
     isAgnaProcessed: Boolean
 ) {
+
+    var count by rememberSaveable {
+        mutableIntStateOf(dailyAgna.count)
+    }
 
     var isDesVisible by rememberSaveable {
         mutableStateOf(false)
@@ -310,7 +402,8 @@ private fun DailyAgnaItem(
 
     val palai = SwipeAction(
         onSwipe = {
-            agnaProcessed(true)
+            agnaProcessed(true, count)
+            count = dailyAgna.count
         },
         icon = {
             Text(
@@ -325,7 +418,8 @@ private fun DailyAgnaItem(
 
     val naPalai = SwipeAction(
         onSwipe = {
-            agnaProcessed(false)
+            agnaProcessed(false, count)
+            count = dailyAgna.count
         },
         icon = {
             Text(
@@ -362,34 +456,104 @@ private fun DailyAgnaItem(
                     Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp)
-                        .padding(top = 10.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
+
+                        Box(
+                            modifier = Modifier.weight(9f)
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text(
+                                    text = dailyAgna.agna,
+                                    fontSize = 18.sp,
+                                    color = textColor,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier
+                                        .padding(
+                                            top = 10.dp,
+                                            bottom = if (dailyAgna.note.isEmpty()) 12.dp else 0.dp
+                                        )
+                                        .padding(horizontal = 5.dp)
+                                )
+
+                                if (dailyAgna.note.isNotEmpty()) {
+                                    Text(
+                                        text = "Note = ${dailyAgna.note}",
+                                        fontSize = 15.sp,
+                                        color = textColor.copy(0.75f),
+                                        textAlign = TextAlign.Start,
+                                        modifier = Modifier
+                                            .padding(
+                                                top = 10.dp,
+                                                bottom = if (!dailyAgna.isCounter) 12.dp else 2.dp
+                                            )
+                                            .padding(horizontal = 5.dp)
+                                    )
+                                }
+
+                                if (dailyAgna.isCounter) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 10.dp)
+                                            .padding(bottom = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        IconButton(
+                                            modifier = Modifier.weight(3.5f),
+                                            onClick = {
+                                                count--
+                                                onCountSubClick(count)
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Remove,
+                                                contentDescription = "Remove",
+                                                tint = textColor
+                                            )
+                                        }
+
+                                        Text(
+                                            modifier = Modifier.weight(3f),
+                                            text = count.toString(),
+                                            textAlign = TextAlign.Center,
+                                            color = textColor,
+                                            fontSize = 18.sp
+                                        )
+
+                                        IconButton(
+                                            modifier = Modifier.weight(3.5f),
+                                            onClick = {
+                                                count++
+                                                onCountAddClick(count)
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add",
+                                                tint = textColor
+                                            )
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
+                        Box(
                             Modifier
                                 .fillMaxWidth()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-
-                            Text(
-                                text = dailyAgna.agna,
-                                fontSize = 18.sp,
-                                color = textColor
-                            )
-
-                            if (dailyAgna.slokNo != 0) {
-                                Text(
-                                    text = "Slok No - ${dailyAgna.slokNo}",
-                                    modifier = Modifier.padding(top = 10.dp),
-                                    fontSize = 18.sp,
-                                    color = textColor
-                                )
-                            }
-
-                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Column {
                                 IconButton(
                                     onClick = {
                                         isDesVisible = !isDesVisible
@@ -404,8 +568,20 @@ private fun DailyAgnaItem(
                                         tint = textColor
                                     )
                                 }
-                            }
 
+                                IconButton(
+                                    onClick = {
+                                        onAENoteClicked()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "",
+                                        tint = textColor
+                                    )
+                                }
+
+                            }
                         }
 
                     }
@@ -445,6 +621,110 @@ private fun DailyAgnaItem(
 
             }
 
+        }
+    }
+}
+
+@Composable
+fun ShowNoteDialog(
+    onDismissClicked: () -> Unit,
+    onSaveClicked: (note: String) -> Unit,
+    note: String
+) {
+
+    var noteText by rememberSaveable {
+        mutableStateOf(note)
+    }
+
+    Dialog(
+        onDismissRequest = { onDismissClicked() },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnClickOutside = true,
+            dismissOnBackPress = true
+        )
+    ) {
+        Card(
+            elevation = CardDefaults.cardElevation(6.dp),
+            shape = RoundedCornerShape(15.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .border(
+                    2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(15.dp)
+                ),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp)
+                    .padding(top = 10.dp, bottom = 15.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+
+                OTF(
+                    text = noteText,
+                    onTextChanged = {
+                        noteText = it
+                    },
+                    onClearTextClicked = { noteText = "" },
+                    label = "Note",
+                    imeAction = ImeAction.Done,
+                    keyBoardType = KeyboardType.Text,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = false
+                )
+
+                Spacer(modifier = Modifier.height(17.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    OutlinedButton(
+                        onClick = { onDismissClicked() },
+                        border = BorderStroke(1.5.dp, Red),
+                        shape = RoundedCornerShape(5.dp),
+                        modifier = Modifier
+                            .height(60.dp)
+                            .weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "",
+                            tint = Red,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            onSaveClicked(noteText)
+                            onDismissClicked()
+                        },
+                        border = BorderStroke(1.5.dp, Green),
+                        shape = RoundedCornerShape(5.dp),
+                        modifier = Modifier
+                            .height(60.dp)
+                            .weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Done,
+                            contentDescription = "",
+                            tint = Green,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                }
+            }
         }
     }
 }

@@ -28,7 +28,8 @@ object Module {
             app,
             DB::class.java,
             "app_database"
-        ).build()
+        )
+            .build()
     }
 
     @Provides

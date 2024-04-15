@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.domain.models.PieChartInput
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
@@ -45,17 +47,11 @@ fun SingleDayReportScreen(
     vm: SingleDayReportViewModel = hiltViewModel()
 ) {
 
-    val date = vm.date
-    val totalAgnas = vm.totalAgnas
-    val totalAgnaPalanPoints = vm.totalAgnaPalanPoints
-    val totalAgnaLopPoints = vm.totalAgnaLopPoints
+    val state by vm.state.collectAsStateWithLifecycle()
     val list = listOf(
-        PieChartInput(Green, totalAgnaPalanPoints, "Agna Palan"),
-        PieChartInput(Red, totalAgnaLopPoints, "Agna Lop")
+        PieChartInput(Green, state.totalAgnaPalanPoints, "Agna Palan"),
+        PieChartInput(Red, state.totalAgnaLopPoints, "Agna Lop")
     )
-    val agnaLopList = vm.agnaLopList.toList()
-    val agnasPalanList = vm.agnaPalanList.toList()
-    val remainingAgnas = vm.remainingAgna
 
     Page {
         Spacer(modifier = Modifier.height(10.dp))
@@ -74,7 +70,7 @@ fun SingleDayReportScreen(
         LazyColumn(modifier = Modifier.padding(horizontal = 10.dp)) {
             item {
                 Text(
-                    text = "${dateFormatter(date)}\n${date.dayOfWeek}",
+                    text = "${dateFormatter(state.date)}\n${state.date.dayOfWeek}",
                     modifier = Modifier
                         .fillMaxWidth(),
                     fontSize = 20.sp,
@@ -98,27 +94,27 @@ fun SingleDayReportScreen(
                 Column(modifier = Modifier.padding(bottom = 30.dp)) {
 
                     Text(
-                        text = "$totalAgnas - Total Agnas",
+                        text = "${state.totalAgnas} - Total Agnas",
                         modifier = Modifier
                             .fillMaxWidth(),
-                        fontSize = 17.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (remainingAgnas != 0L) {
+                    if (state.remainingAgna != 0L) {
                         Text(
-                            text = "$remainingAgnas - Remaining Agnas to fill.",
+                            text = "${state.remainingAgna} - Remaining Agnas to fill.",
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            fontSize = 17.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    Spacer(modifier = Modifier.height(if (remainingAgnas != 0L) 30.dp else 10.dp))
+                    Spacer(modifier = Modifier.height(if (state.remainingAgna != 0L) 30.dp else 10.dp))
 
                     Row(
                         modifier = Modifier
@@ -126,113 +122,137 @@ fun SingleDayReportScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "${agnasPalanList.size} - Agna Palai",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Green
-                        )
+                        if (state.agnaPalanList.isNotEmpty()) {
+                            Text(
+                                text = if (state.agnaLopList.isNotEmpty()) "${state.agnaPalanList.size} - Agnas Palai" else "All Agnas Palai",
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Green
+                            )
+                        }
 
-                        Text(
-                            text = "${agnaLopList.size} - Agna Na Palai",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Red
-                        )
+                        if (state.agnaLopList.isNotEmpty()) {
+                            Text(
+                                text = if (state.agnaPalanList.isNotEmpty()) "${state.agnaLopList.size} - Agnas Lopai" else "All Agnas Lopai",
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Red
+                            )
+                        }
                     }
                 }
             }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
+            if (state.agnaPalanList.isNotEmpty()) {
+                item {
+                    Row(
                         modifier = Modifier
-                            .background(
-                                color = Green,
-                                shape = RoundedCornerShape(10.dp)
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = Green,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                                .size(45.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "${state.agnaPalanList.size} / ${state.totalAgnas} Agna Palai",
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                }
+                itemsIndexed(
+                    state.agnaPalanList,
+                    key = { _, item ->
+                        item.id
+                    }
+                ) { index, item ->
+                    Row(
+                        modifier = Modifier.padding(bottom = 15.dp, start = 5.dp),
+                    ) {
+                        Text(
+                            text = "${index + 1}.",
+                            fontSize = 19.sp,
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Column {
+                            Text(
+                                text = item.agna,
+                                fontSize = 19.sp,
                             )
-                            .size(45.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "${agnasPalanList.size} / $totalAgnas Agna Palai",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+
+                            if (item.note.isNotEmpty()) {
+                                Text(
+                                    text = "Note = ${item.note}",
+                                    fontSize = 16.sp,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-            itemsIndexed(
-                agnasPalanList,
-                key = { _, item ->
-                    item.id
-                }
-            ) { index, item ->
-                Row(
-                    modifier = Modifier.padding(bottom = 5.dp, start = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${index + 1}.",
-                        fontSize = 18.sp,
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = item.agna,
-                        fontSize = 18.sp,
-                    )
-                }
-            }
-
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp)
-                        .padding(top = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
+            if (state.agnaLopList.isNotEmpty()) {
+                item {
+                    Row(
                         modifier = Modifier
-                            .background(
-                                color = Red,
-                                shape = RoundedCornerShape(10.dp)
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp)
+                            .padding(top = 15.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = Red,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                                .size(45.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "${state.agnaLopList.size} / ${state.totalAgnas} Agna Na Palai",
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                }
+                itemsIndexed(
+                    state.agnaLopList,
+                    key = { _, item ->
+                        item.id
+                    }
+                ) { index, item ->
+                    Row(
+                        modifier = Modifier.padding(bottom = 15.dp, start = 5.dp)
+                    ) {
+                        Text(
+                            text = "${index + 1}.",
+                            fontSize = 19.sp,
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Column {
+                            Text(
+                                text = item.agna,
+                                fontSize = 19.sp,
                             )
-                            .size(45.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "${agnaLopList.size} / $totalAgnas Agna Na Palai",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
 
-            itemsIndexed(
-                agnaLopList,
-                key = { _, item ->
-                    item.id
-                }
-            ) { index, item ->
-                Row(
-                    modifier = Modifier.padding(bottom = 5.dp, start = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${index + 1}.",
-                        fontSize = 18.sp,
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = item.agna,
-                        fontSize = 18.sp,
-                    )
+                            if (item.note.isNotEmpty()) {
+                                Text(
+                                    text = "Note = ${item.note}",
+                                    fontSize = 16.sp,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

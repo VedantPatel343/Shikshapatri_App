@@ -9,11 +9,17 @@ import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
-import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
 import com.swaminarayan.shikshapatriApp.domain.models.DailyForm
+import com.swaminarayan.shikshapatriApp.utils.toDailyAgnaHelperClass
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -26,19 +32,24 @@ class SingleDayReportViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    var totalAgnas = 0L
-    var date: LocalDate = LocalDate.now()
-    var agnaPalanList: MutableList<Agna> = mutableListOf()
-    var agnaLopList: MutableList<Agna> = mutableListOf()
-    var totalAgnaPalanPoints = 0L
-    var totalAgnaLopPoints = 0L
-
-    var remainingAgna = 0L
+    private val _state = MutableStateFlow(initialUiState())
+    val state = combine(
+        _state,
+        _state
+    ) { state, _ ->
+        state
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        initialUiState()
+    )
 
     init {
         savedStateHandle.get<Long>(FORM_ID)?.let {
             viewModelScope.launch {
-                totalAgnas = agnaRepo.agnas().size.toLong()
+                _state.update {
+                    it.copy(totalAgnas = agnaRepo.agnas().size.toLong())
+                }
                 setUpList(it)
             }
         }
@@ -47,18 +58,44 @@ class SingleDayReportViewModel @Inject constructor(
     private fun setUpList(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val form = dailyFormRepo.getDailyFormById(id)
-            date = form.date
+            _state.update {
+                it.copy(date = form.date)
+            }
 
             form.dailyAgnas.forEach { dailyAgna ->
                 val agna = agnaRepo.getAgnaById(dailyAgna.id)
                 try {
                     if (agna != null) {
                         if (dailyAgna.palai == true) {
-                            totalAgnaPalanPoints += agna.rajipoPoints
-                            agnaPalanList.add(agna)
+                            val list = _state.value.agnaPalanList.toMutableList()
+                            list.add(
+                                agna.toDailyAgnaHelperClass(
+                                    dailyAgna.palai,
+                                    dailyAgna.count,
+                                    dailyAgna.note
+                                )
+                            )
+                            _state.update {
+                                it.copy(
+                                    totalAgnaPalanPoints = _state.value.totalAgnaPalanPoints + agna.rajipoPoints,
+                                    agnaPalanList = list.toList()
+                                )
+                            }
                         } else {
-                            totalAgnaLopPoints += agna.rajipoPoints
-                            agnaLopList.add(agna)
+                            val list = _state.value.agnaLopList.toMutableList()
+                            list.add(
+                                agna.toDailyAgnaHelperClass(
+                                    dailyAgna.palai,
+                                    dailyAgna.count,
+                                    dailyAgna.note
+                                )
+                            )
+                            _state.update {
+                                it.copy(
+                                    totalAgnaLopPoints = _state.value.totalAgnaLopPoints + agna.rajipoPoints,
+                                    agnaLopList = list.toList()
+                                )
+                            }
                         }
                     } else {
                         removeAgnaFromDailyForm(form, dailyAgna)
@@ -67,7 +104,12 @@ class SingleDayReportViewModel @Inject constructor(
                     Log.i("exceptionCaught", "SingleDayReport VM: $e")
                 }
             }
-            remainingAgna = totalAgnas - (agnaPalanList.size + agnaLopList.size)
+            _state.update {
+                it.copy(
+                    remainingAgna = _state.value.totalAgnas -
+                            (_state.value.agnaPalanList.size + _state.value.agnaLopList.size)
+                )
+            }
         }
     }
 
@@ -87,3 +129,24 @@ class SingleDayReportViewModel @Inject constructor(
     }
 
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun initialUiState() = SDReportUiState(
+    totalAgnas = 0L,
+    date = LocalDate.now(),
+    agnaPalanList = emptyList(),
+    agnaLopList = emptyList(),
+    totalAgnaPalanPoints = 0L,
+    totalAgnaLopPoints = 0L,
+    remainingAgna = 0L
+)
+
+data class SDReportUiState(
+    val totalAgnas: Long,
+    val date: LocalDate,
+    val agnaPalanList: List<DailyAgnaHelperClass>,
+    val agnaLopList: List<DailyAgnaHelperClass>,
+    val totalAgnaPalanPoints: Long,
+    val totalAgnaLopPoints: Long,
+    val remainingAgna: Long
+)

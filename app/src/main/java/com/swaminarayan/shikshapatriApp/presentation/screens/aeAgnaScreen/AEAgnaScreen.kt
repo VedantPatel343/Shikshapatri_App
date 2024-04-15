@@ -54,16 +54,7 @@ fun AEAgnaScreen(
 ) {
     val context = LocalContext.current
     val localFocus = LocalFocusManager.current
-    val agna by vm.agna.collectAsStateWithLifecycle()
-    val des by vm.des.collectAsStateWithLifecycle()
-    val author by vm.author.collectAsStateWithLifecycle()
-    val slokNo by vm.slokNo.collectAsStateWithLifecycle()
-    val points by vm.rajipoPoints.collectAsStateWithLifecycle()
-    val alwaysPalayChe by vm.alwaysPalayChe.collectAsStateWithLifecycle()
-
-    val agnaError by vm.agnaError.collectAsStateWithLifecycle()
-    val authorError by vm.authorError.collectAsStateWithLifecycle()
-    val rajipoPointsError by vm.rajipoPointsError.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = true) {
         vm.uiEventFlow.collectLatest {
@@ -81,7 +72,7 @@ fun AEAgnaScreen(
             popBackStack = { navController.popBackStack() },
             onSaveClicked = {
                 vm.onEvent(AEAgnaEvents.OnSaveAgna)
-                if (validateErrors(vm)) {
+                if (!state.agnaError) {
                     navController.popBackStack()
                 }
             }
@@ -99,7 +90,7 @@ fun AEAgnaScreen(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 5.dp),
-                value = agna,
+                value = state.agna,
                 onValueChange = {
                     vm.onEvent(AEAgnaEvents.OnAgnaChange(it))
                 },
@@ -109,9 +100,9 @@ fun AEAgnaScreen(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Next
                 ),
-                isError = agnaError,
+                isError = state.agnaError,
                 trailingIcon = {
-                    if (agna.isNotEmpty()) {
+                    if (state.agna.isNotEmpty()) {
                         Icon(
                             modifier = Modifier
                                 .clickable { vm.onEvent(AEAgnaEvents.OnAgnaChange("")) }
@@ -135,7 +126,7 @@ fun AEAgnaScreen(
             )
 
             OutlinedTextField(
-                value = des,
+                value = state.des,
                 onValueChange = { vm.onEvent(AEAgnaEvents.OnDesChange(it)) },
                 singleLine = false,
                 keyboardOptions = KeyboardOptions(
@@ -155,7 +146,7 @@ fun AEAgnaScreen(
                 keyboardActions = KeyboardActions(onNext = { localFocus.moveFocus(FocusDirection.Down) }),
                 label = { Text(text = "Description") },
                 trailingIcon = {
-                    if (des.isNotEmpty()) {
+                    if (state.des.isNotEmpty()) {
                         IconButton(onClick = { vm.onEvent(AEAgnaEvents.OnDesChange("")) }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
@@ -167,11 +158,11 @@ fun AEAgnaScreen(
             )
 
             OTF(
-                text = author,
+                text = state.author,
                 onTextChanged = { vm.onEvent(AEAgnaEvents.OnAuthorChange(it)) },
                 onClearTextClicked = { vm.onEvent(AEAgnaEvents.OnAuthorChange("")) },
                 label = "Author",
-                isError = authorError,
+                isError = false,
                 keyBoardType = KeyboardType.Text,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -179,23 +170,11 @@ fun AEAgnaScreen(
             Spacer(modifier = Modifier.height(5.dp))
 
             OTF(
-                text = slokNo,
-                onTextChanged = { vm.onEvent(AEAgnaEvents.OnSlokNoChange(it)) },
-                onClearTextClicked = { vm.onEvent(AEAgnaEvents.OnSlokNoChange("")) },
-                label = "Slok No.",
-                isError = false,
-                keyBoardType = KeyboardType.Number,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-            OTF(
-                text = points,
+                text = state.rajipoPoints,
                 onTextChanged = { vm.onEvent(AEAgnaEvents.OnPointsChange(it)) },
                 onClearTextClicked = { vm.onEvent(AEAgnaEvents.OnPointsChange("")) },
-                label = "Points",
-                isError = rajipoPointsError,
+                label = "Rajipo Points",
+                isError = false,
                 keyBoardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth(),
                 imeAction = ImeAction.Done
@@ -217,33 +196,36 @@ fun AEAgnaScreen(
                 )
 
                 Switch(
-                    checked = alwaysPalayChe,
+                    checked = state.alwaysPalayChe,
                     onCheckedChange = {
                         vm.onEvent(AEAgnaEvents.IsAlwaysPalayCheChange(it))
                     }
                 )
             }
 
-        }
-    }
-}
+            Spacer(modifier = Modifier.height(13.dp))
 
-fun validateErrors(vm: AEAgnaViewModel): Boolean {
-    return when {
-        vm.agnaError.value -> {
-            false
-        }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 3.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Is Counter?",
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        vm.authorError.value -> {
-            false
-        }
+                Switch(
+                    checked = state.isCounter,
+                    onCheckedChange = {
+                        vm.onEvent(AEAgnaEvents.IsCounterChange(it))
+                    }
+                )
+            }
 
-        vm.rajipoPointsError.value -> {
-            false
-        }
-
-        else -> {
-            true
         }
     }
 }

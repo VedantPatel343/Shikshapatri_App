@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,6 +60,7 @@ import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.calender.CalenderDataSource
 import com.swaminarayan.shikshapatriApp.calender.ui.Calender
 import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
+import com.swaminarayan.shikshapatriApp.presentation.components.ImageDialog
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
@@ -79,6 +81,12 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     var showDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+    var showImageDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var imageToShow by rememberSaveable {
+        mutableIntStateOf(maharaj)
     }
     val calenderData = CalenderDataSource()
     val visibleDateList = calenderData.getVisibleDates(startDate = state.firstDay)
@@ -135,11 +143,19 @@ fun HomeScreen(
             ) {
                 CircularImage(
                     image = maharaj,
-                    size = 160.dp
+                    size = 160.dp,
+                    onImageClicked = {
+                        showImageDialog = true
+                        imageToShow = maharaj
+                    }
                 )
                 CircularImage(
                     image = guruji,
-                    size = 160.dp
+                    size = 160.dp,
+                    onImageClicked = {
+                        showImageDialog = true
+                        imageToShow = guruji
+                    }
                 )
             }
         }
@@ -213,6 +229,13 @@ fun HomeScreen(
 
         }
 
+        if (showImageDialog) {
+            ImageDialog(
+                image = imageToShow,
+                dismissClicked = { showImageDialog = false }
+            )
+        }
+
     }
 }
 
@@ -234,7 +257,7 @@ private fun NotesItem(note: String, index: Int) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Slogan(onLongClick: () -> Unit, text: String) {
-    Divider(color = MaterialTheme.colorScheme.primary)
+    HorizontalDivider(color = MaterialTheme.colorScheme.primary)
     Text(
         text = text,
         fontSize = 18.sp,
@@ -249,7 +272,7 @@ fun Slogan(onLongClick: () -> Unit, text: String) {
             ),
         textAlign = TextAlign.Center
     )
-    Divider(color = MaterialTheme.colorScheme.primary)
+    HorizontalDivider(color = MaterialTheme.colorScheme.primary)
     Spacer(modifier = Modifier.height(15.dp))
 }
 
