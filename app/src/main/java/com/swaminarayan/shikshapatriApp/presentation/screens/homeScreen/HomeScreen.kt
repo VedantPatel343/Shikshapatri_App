@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,6 +60,7 @@ import androidx.navigation.NavHostController
 import com.swaminarayan.shikshapatriApp.calender.CalenderDataSource
 import com.swaminarayan.shikshapatriApp.calender.ui.Calender
 import com.swaminarayan.shikshapatriApp.presentation.components.CircularImage
+import com.swaminarayan.shikshapatriApp.presentation.components.ImageDialog
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
@@ -79,6 +81,12 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     var showDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+    var showImageDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var imageToShow by rememberSaveable {
+        mutableIntStateOf(maharaj)
     }
     val calenderData = CalenderDataSource()
     val visibleDateList = calenderData.getVisibleDates(startDate = state.firstDay)
@@ -135,11 +143,19 @@ fun HomeScreen(
             ) {
                 CircularImage(
                     image = maharaj,
-                    size = 160.dp
+                    size = 160.dp,
+                    onImageClicked = {
+                        showImageDialog = true
+                        imageToShow = maharaj
+                    }
                 )
                 CircularImage(
                     image = guruji,
-                    size = 160.dp
+                    size = 160.dp,
+                    onImageClicked = {
+                        showImageDialog = true
+                        imageToShow = guruji
+                    }
                 )
             }
         }
@@ -211,6 +227,13 @@ fun HomeScreen(
                 )
             }
 
+        }
+
+        if (showImageDialog) {
+            ImageDialog(
+                image = imageToShow,
+                dismissClicked = { showImageDialog = false }
+            )
         }
 
     }

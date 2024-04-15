@@ -142,11 +142,11 @@ private fun initialUiState() = SDReportUiState(
 )
 
 data class SDReportUiState(
-    var totalAgnas: Long,
-    var date: LocalDate,
-    var agnaPalanList: List<DailyAgnaHelperClass>,
-    var agnaLopList: List<DailyAgnaHelperClass>,
-    var totalAgnaPalanPoints: Long,
-    var totalAgnaLopPoints: Long,
-    var remainingAgna: Long
+    val totalAgnas: Long,
+    val date: LocalDate,
+    val agnaPalanList: List<DailyAgnaHelperClass>,
+    val agnaLopList: List<DailyAgnaHelperClass>,
+    val totalAgnaPalanPoints: Long,
+    val totalAgnaLopPoints: Long,
+    val remainingAgna: Long
 )

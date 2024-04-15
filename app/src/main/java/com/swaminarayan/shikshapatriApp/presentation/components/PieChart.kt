@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowLeft
-import androidx.compose.material.icons.filled.ArrowRight
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -82,6 +83,10 @@ fun PieChart(
         mutableIntStateOf(maharajList.random().image)
     }
 
+    var showImageDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     val scope = rememberCoroutineScope()
 
     var animationPlayed by rememberSaveable {
@@ -139,7 +144,7 @@ fun PieChart(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowLeft,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
                         contentDescription = "Left arrow key"
                     )
                 }
@@ -161,7 +166,7 @@ fun PieChart(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowRight,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
                         contentDescription = "Right arrow key"
                     )
                 }
@@ -250,6 +255,7 @@ fun PieChart(
                 modifier = Modifier
                     .clip(CircleShape)
                     .size(animateSize.dp)
+                    .clickable { showImageDialog = true }
                     .border(5.dp, Color.White, shape = CircleShape),
                 contentScale = ContentScale.Crop
             )
@@ -258,13 +264,17 @@ fun PieChart(
         Spacer(modifier = Modifier.height(spaceBetween))
         Spacer(modifier = Modifier.height(space.dp))
 
+        if (showImageDialog) {
+            ImageDialog(dismissClicked = { showImageDialog = false }, image = maharaj)
+        }
+
     }
 }
 
 fun getCeilOrFloorValue(value: Float): Int {
-    val per = String.format("%.1f", value).toFloat()
-    val bal = String.format("%.1f", per - per.toInt()).toFloat()
-    return if (bal > 0.5) {
+    val per = String.format("%.2f", value).toFloat()
+    val bal = String.format("%.2f", per - per.toInt()).toFloat()
+    return if (bal > 0.50) {
         (value + 1).toInt()
     } else {
         value.toInt()

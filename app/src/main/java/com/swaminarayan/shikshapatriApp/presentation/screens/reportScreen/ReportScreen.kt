@@ -1,7 +1,6 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.reportScreen
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
@@ -80,8 +79,6 @@ fun ReportScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(15.dp))
-
-                Log.i("TAG", "ReportScreen: ${state.monthlyForms.toList()}")
 
                 AnimatedVisibility(visible = state.monthlyForms.toList().isEmpty()) {
                     Text(
