@@ -9,9 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.swaminarayan.shikshapatriApp.constants.FORM_ID
 import com.swaminarayan.shikshapatriApp.data.repository.AgnaRepo
 import com.swaminarayan.shikshapatriApp.data.repository.DailyFormRepo
-import com.swaminarayan.shikshapatriApp.domain.models.Agna
 import com.swaminarayan.shikshapatriApp.domain.models.DailyAgna
+import com.swaminarayan.shikshapatriApp.domain.models.DailyAgnaHelperClass
 import com.swaminarayan.shikshapatriApp.domain.models.DailyForm
+import com.swaminarayan.shikshapatriApp.utils.toDailyAgnaHelperClass
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,7 +68,13 @@ class SingleDayReportViewModel @Inject constructor(
                     if (agna != null) {
                         if (dailyAgna.palai == true) {
                             val list = _state.value.agnaPalanList.toMutableList()
-                            list.add(agna)
+                            list.add(
+                                agna.toDailyAgnaHelperClass(
+                                    dailyAgna.palai,
+                                    dailyAgna.count,
+                                    dailyAgna.note
+                                )
+                            )
                             _state.update {
                                 it.copy(
                                     totalAgnaPalanPoints = _state.value.totalAgnaPalanPoints + agna.rajipoPoints,
@@ -76,7 +83,13 @@ class SingleDayReportViewModel @Inject constructor(
                             }
                         } else {
                             val list = _state.value.agnaLopList.toMutableList()
-                            list.add(agna)
+                            list.add(
+                                agna.toDailyAgnaHelperClass(
+                                    dailyAgna.palai,
+                                    dailyAgna.count,
+                                    dailyAgna.note
+                                )
+                            )
                             _state.update {
                                 it.copy(
                                     totalAgnaLopPoints = _state.value.totalAgnaLopPoints + agna.rajipoPoints,
@@ -131,8 +144,8 @@ private fun initialUiState() = SDReportUiState(
 data class SDReportUiState(
     var totalAgnas: Long,
     var date: LocalDate,
-    var agnaPalanList: List<Agna>,
-    var agnaLopList: List<Agna>,
+    var agnaPalanList: List<DailyAgnaHelperClass>,
+    var agnaLopList: List<DailyAgnaHelperClass>,
     var totalAgnaPalanPoints: Long,
     var totalAgnaLopPoints: Long,
     var remainingAgna: Long

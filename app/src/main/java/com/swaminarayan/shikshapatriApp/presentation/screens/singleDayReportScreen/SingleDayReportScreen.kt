@@ -97,7 +97,7 @@ fun SingleDayReportScreen(
                         text = "${state.totalAgnas} - Total Agnas",
                         modifier = Modifier
                             .fillMaxWidth(),
-                        fontSize = 17.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary
@@ -108,7 +108,7 @@ fun SingleDayReportScreen(
                             text = "${state.remainingAgna} - Remaining Agnas to fill.",
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            fontSize = 17.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary
@@ -125,7 +125,7 @@ fun SingleDayReportScreen(
                         if (state.agnaPalanList.isNotEmpty()) {
                             Text(
                                 text = if (state.agnaLopList.isNotEmpty()) "${state.agnaPalanList.size} - Agnas Palai" else "All Agnas Palai",
-                                fontSize = 17.sp,
+                                fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Green
                             )
@@ -134,7 +134,7 @@ fun SingleDayReportScreen(
                         if (state.agnaLopList.isNotEmpty()) {
                             Text(
                                 text = if (state.agnaPalanList.isNotEmpty()) "${state.agnaLopList.size} - Agnas Lopai" else "All Agnas Lopai",
-                                fontSize = 17.sp,
+                                fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Red
                             )
@@ -162,10 +162,11 @@ fun SingleDayReportScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "${state.agnaPalanList.size} / ${state.totalAgnas} Agna Palai",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
+                    Spacer(modifier = Modifier.height(5.dp))
                 }
                 itemsIndexed(
                     state.agnaPalanList,
@@ -174,17 +175,26 @@ fun SingleDayReportScreen(
                     }
                 ) { index, item ->
                     Row(
-                        modifier = Modifier.padding(bottom = 5.dp, start = 5.dp),
+                        modifier = Modifier.padding(bottom = 15.dp, start = 5.dp),
                     ) {
                         Text(
                             text = "${index + 1}.",
-                            fontSize = 18.sp,
+                            fontSize = 19.sp,
                         )
                         Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = item.agna,
-                            fontSize = 18.sp,
-                        )
+                        Column {
+                            Text(
+                                text = item.agna,
+                                fontSize = 19.sp,
+                            )
+
+                            if (item.note.isNotEmpty()) {
+                                Text(
+                                    text = "Note = ${item.note}",
+                                    fontSize = 16.sp,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -209,9 +219,10 @@ fun SingleDayReportScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "${state.agnaLopList.size} / ${state.totalAgnas} Agna Na Palai",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Medium
                         )
+                        Spacer(modifier = Modifier.height(5.dp))
                     }
                 }
                 itemsIndexed(
@@ -221,17 +232,26 @@ fun SingleDayReportScreen(
                     }
                 ) { index, item ->
                     Row(
-                        modifier = Modifier.padding(bottom = 5.dp, start = 5.dp)
+                        modifier = Modifier.padding(bottom = 15.dp, start = 5.dp)
                     ) {
                         Text(
                             text = "${index + 1}.",
-                            fontSize = 18.sp,
+                            fontSize = 19.sp,
                         )
                         Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = item.agna,
-                            fontSize = 18.sp,
-                        )
+                        Column {
+                            Text(
+                                text = item.agna,
+                                fontSize = 19.sp,
+                            )
+
+                            if (item.note.isNotEmpty()) {
+                                Text(
+                                    text = "Note = ${item.note}",
+                                    fontSize = 16.sp,
+                                )
+                            }
+                        }
                     }
                 }
             }
