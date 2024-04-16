@@ -158,6 +158,7 @@ val maharajList = listOf(
     MaharajGuruji(R.drawable.maharaj_150),
     MaharajGuruji(R.drawable.maharaj_152),
     MaharajGuruji(R.drawable.maharaj_153),
+    MaharajGuruji(R.drawable.maharaj_154),
     MaharajGuruji(R.drawable.maharaj_155),
     MaharajGuruji(R.drawable.maharaj_156),
     MaharajGuruji(R.drawable.maharaj_157),
@@ -167,7 +168,6 @@ val maharajList = listOf(
     MaharajGuruji(R.drawable.maharaj_161),
     MaharajGuruji(R.drawable.maharaj_162),
     MaharajGuruji(R.drawable.maharaj_163),
-    MaharajGuruji(R.drawable.maharaj_164),
     MaharajGuruji(R.drawable.maharaj_165),
     MaharajGuruji(R.drawable.maharaj_166),
     MaharajGuruji(R.drawable.maharaj_167),
@@ -197,6 +197,7 @@ val maharajList = listOf(
     MaharajGuruji(R.drawable.maharaj_128, isLeftSideFace = true, isRightSideFace = false),
     MaharajGuruji(R.drawable.maharaj_142, isLeftSideFace = true, isRightSideFace = false),
     MaharajGuruji(R.drawable.maharaj_144, isLeftSideFace = true, isRightSideFace = false),
+    MaharajGuruji(R.drawable.maharaj_164, isLeftSideFace = true, isRightSideFace = false),
     MaharajGuruji(R.drawable.maharaj_175, isLeftSideFace = true, isRightSideFace = false),
 
     // Maharaj with Right side face.
@@ -214,5 +215,4 @@ val maharajList = listOf(
     MaharajGuruji(R.drawable.maharaj_132, isLeftSideFace = false, isRightSideFace = true),
     MaharajGuruji(R.drawable.maharaj_146, isLeftSideFace = false, isRightSideFace = true),
     MaharajGuruji(R.drawable.maharaj_151, isLeftSideFace = false, isRightSideFace = true),
-    MaharajGuruji(R.drawable.maharaj_154, isLeftSideFace = false, isRightSideFace = true)
 )
