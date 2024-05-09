@@ -1,6 +1,7 @@
 package com.swaminarayan.shikshapatriApp.presentation.screens.allAgnaScreen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import com.swaminarayan.shikshapatriApp.presentation.components.ConfirmMessage
 import com.swaminarayan.shikshapatriApp.presentation.components.Notice
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
+import com.swaminarayan.shikshapatriApp.ui.theme.backgroundL
 import com.swaminarayan.shikshapatriApp.utils.UiEvents
 import com.swaminarayan.shikshapatriApp.utils.showToast
 import kotlinx.coroutines.delay
@@ -85,7 +87,7 @@ fun AllAgnaScreen(
             Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp)
-                .padding(top = 5.dp),
+                .padding(top = 10.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -95,8 +97,6 @@ fun AllAgnaScreen(
                 color = MaterialTheme.colorScheme.primary
             )
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
 
         if (state.agnas.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -108,7 +108,7 @@ fun AllAgnaScreen(
                 isNoticeVisible = isNoticeVisible,
                 leftArrowColor = Color.Gray
             )
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             LazyColumn {
                 items(state.agnas, key = { it.id }) { agna ->
                     AgnaItem(
@@ -178,7 +178,7 @@ fun AgnaItem(
         startActions = listOf(editAgna),
         endActions = listOf(deleteAgna),
         swipeThreshold = 100.dp,
-        modifier = Modifier.padding(bottom = 10.dp)
+        modifier = Modifier.padding(bottom = 13.dp, top = 2.dp)
     ) {
         Box(
             modifier = Modifier
@@ -210,10 +210,10 @@ fun AgnaItem(
 
                             Text(
                                 text = agna.agna,
-                                fontSize = 18.sp,
+                                fontSize = 20.sp,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier
-                                    .padding(10.dp)
+                                    .padding(horizontal = 10.dp, vertical = 20.dp)
                                     .weight(9f)
                             )
 

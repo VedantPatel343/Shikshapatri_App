@@ -64,6 +64,7 @@ import com.swaminarayan.shikshapatriApp.presentation.components.ImageDialog
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
+import com.swaminarayan.shikshapatriApp.ui.theme.backgroundL
 import com.swaminarayan.shikshapatriApp.utils.dateFormatter
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -192,40 +193,29 @@ fun HomeScreen(
                 }
 
                 Spacer(modifier = Modifier.height(30.dp))
-                Text(
-                    modifier = Modifier.padding(start = 10.dp),
-                    text = "Notes:",
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(15.dp))
-
-                if (showDialog) {
-                    UpdateTextDialog(
-                        onDismissClicked = { showDialog = false },
-                        onSaveClicked = {
-                            vm.onEvent(HomeEvent.UpdateSlogan(it))
-                            showDialog = false
-                        },
-                        textValue = state.slogan
-                    )
-                }
+//                Text(
+//                    modifier = Modifier.padding(start = 10.dp),
+//                    text = "Notes:",
+//                    fontSize = 20.sp,
+//                    color = MaterialTheme.colorScheme.primary,
+//                    fontWeight = FontWeight.Bold
+//                )
+//                Spacer(modifier = Modifier.height(15.dp))
 
 
             }
 
-            itemsIndexed(
-                items = state.notes,
-                key = { _, note ->
-                    note.id
-                }
-            ) { index, note ->
-                NotesItem(
-                    index = index + 1,
-                    note = note.des
-                )
-            }
+//            itemsIndexed(
+//                items = state.notes,
+//                key = { _, note ->
+//                    note.id
+//                }
+//            ) { index, note ->
+//                NotesItem(
+//                    index = index + 1,
+//                    note = note.des
+//                )
+//            }
 
         }
 
@@ -236,29 +226,40 @@ fun HomeScreen(
             )
         }
 
+        if (showDialog) {
+            UpdateTextDialog(
+                onDismissClicked = { showDialog = false },
+                onSaveClicked = {
+                    vm.onEvent(HomeEvent.UpdateSlogan(it))
+                    showDialog = false
+                },
+                textValue = state.slogan
+            )
+        }
+
     }
 }
 
-@Composable
-private fun NotesItem(note: String, index: Int) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 15.dp, start = 10.dp, end = 10.dp),
-        elevation = CardDefaults.cardElevation(3.dp),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-            Text(text = "$index.")
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(text = note)
-        }
-    }
-}
+//@Composable
+//private fun NotesItem(note: String, index: Int) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(bottom = 15.dp, start = 10.dp, end = 10.dp),
+//        elevation = CardDefaults.cardElevation(3.dp),
+//        colors = CardDefaults.cardColors(Color.White)
+//    ) {
+//        Row(
+//            Modifier
+//                .fillMaxWidth()
+//                .padding(10.dp)
+//        ) {
+//            Text(text = "$index.")
+//            Spacer(modifier = Modifier.width(10.dp))
+//            Text(text = note)
+//        }
+//    }
+//}
 
 
 @OptIn(ExperimentalFoundationApi::class)

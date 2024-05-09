@@ -82,7 +82,7 @@ fun NotesScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(vertical = 10.dp)
-                    .padding(top = 5.dp),
+                    .padding(top = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -103,7 +103,7 @@ fun NotesScreen(
                     isNoticeVisible = isNoticeVisible,
                     leftArrowColor = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 LazyColumn {
                     items(items = notes, key = { it.id }) { note ->
                         NoteItem(
@@ -168,7 +168,7 @@ private fun NoteItem(
         startActions = listOf(editNote),
         endActions = listOf(deleteNote),
         swipeThreshold = 100.dp,
-        modifier = Modifier.padding(bottom = 10.dp)
+        modifier = Modifier.padding(bottom = 13.dp, top = 2.dp)
     ) {
 
         Box(
@@ -193,9 +193,9 @@ private fun NoteItem(
 
                     Text(
                         text = note.des,
-                        fontSize = 18.sp,
+                        fontSize = 20.sp,
                         modifier = Modifier
-                            .padding(bottom = 5.dp)
+                            .padding(horizontal = 10.dp, vertical = 10.dp)
                     )
 
                     ConfirmMessage(

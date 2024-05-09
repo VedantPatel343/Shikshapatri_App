@@ -18,7 +18,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowLeft
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,7 +59,7 @@ fun Calender(
 
                 IconButton(onClick = { onPreviousClick() }) {
                     Icon(
-                        imageVector = Icons.Default.ArrowLeft,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
                         contentDescription = "Left arrow key"
                     )
                 }
@@ -68,14 +69,14 @@ fun Calender(
                 if (visibleDateList.last() < LocalDate.now()) {
                     IconButton(onClick = { onNextClick() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowRight,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
                             contentDescription = "Right arrow key"
                         )
                     }
                 } else {
                     Icon(
                         modifier = Modifier.padding(end = 20.dp),
-                        imageVector = Icons.Default.ArrowRight,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
                         contentDescription = "Right arrow key",
                         tint = MaterialTheme.colorScheme.background
                     )
@@ -160,7 +161,7 @@ fun CalenderItem(
                     shape = CircleShape
                 )
                 .border(
-                    2.5.dp,
+                    1.2.dp,
                     borderColor,
                     CircleShape
                 ),

@@ -36,14 +36,9 @@ fun ImageDialog(
     ) {
         Card(
             elevation = CardDefaults.cardElevation(6.dp),
-            shape = RoundedCornerShape(100),
+            shape = CircleShape,
             modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .border(
-                    2.dp,
-                    color = Color.Transparent,
-                    shape = RoundedCornerShape(100)
-                ),
+                .fillMaxWidth(0.95f),
             colors = CardDefaults.cardColors(Color.Transparent)
         ) {
 
@@ -56,7 +51,7 @@ fun ImageDialog(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth(0.98f)
-                        .fillMaxHeight(0.75f)
+                        .fillMaxHeight(0.45f)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )

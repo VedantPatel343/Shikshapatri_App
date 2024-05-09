@@ -17,6 +17,7 @@ val gurujiList = listOf(
     MaharajGuruji(R.drawable.guruji_6_l),
     MaharajGuruji(R.drawable.guruji_7_l),
     MaharajGuruji(R.drawable.guruji_8_l),
+    MaharajGuruji(R.drawable.guruji_9),
 )
 val gurujiLeftFaceList = listOf(
     MaharajGuruji(R.drawable.guruji_4_l),

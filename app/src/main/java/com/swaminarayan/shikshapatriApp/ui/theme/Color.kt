@@ -14,6 +14,7 @@ val Red = Color(0xFFE64A19)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+val primary = Color(0xFFD32F2F)
 val errorL = Color.Red
 val backgroundL = Color(0xFFFFFBFE)
 val secondaryL = Color(0xFFFFFFFF)
