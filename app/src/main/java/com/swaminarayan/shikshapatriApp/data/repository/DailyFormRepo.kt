@@ -9,10 +9,6 @@ class DailyFormRepo(
     private val dao: DailyFormDAO
 ) {
 
-    fun getDailyForms(): Flow<List<DailyForm>> {
-        return dao.getDailyReports()
-    }
-
     suspend fun dailyFormList(): List<DailyForm> {
         return dao.dailyFormList()
     }

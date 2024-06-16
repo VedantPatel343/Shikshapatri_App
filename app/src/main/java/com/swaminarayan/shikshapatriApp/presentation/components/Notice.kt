@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -28,7 +28,9 @@ import com.swaminarayan.shikshapatriApp.ui.theme.Red
 fun Notice(
     text: String,
     isNoticeVisible: Boolean,
-    leftArrowColor: Color
+    leftArrowColor: Color,
+    isLeftIconVisible: Boolean,
+    isRightIconVisible: Boolean
 ) {
 
     AnimatedVisibility(visible = isNoticeVisible) {
@@ -45,11 +47,13 @@ fun Notice(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = leftArrowColor
-                    )
+                    if (isLeftIconVisible) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = leftArrowColor
+                        )
+                    }
                     Text(
                         text = text,
                         fontSize = 17.sp,
@@ -58,11 +62,13 @@ fun Notice(
                             .padding(horizontal = 5.dp),
                         textAlign = TextAlign.Center
                     )
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = null,
-                        tint = Red
-                    )
+                    if (isRightIconVisible) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Red
+                        )
+                    }
                 }
             }
         }

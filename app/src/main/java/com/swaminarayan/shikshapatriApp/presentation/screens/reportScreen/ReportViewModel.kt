@@ -64,7 +64,8 @@ class ReportViewModel @Inject constructor(
                     monthlyForms = mutableListOf(),
                     reportAgnaItemList = mutableListOf(),
                     agnaPalanPoints = 0,
-                    agnaLopPoints = 0
+                    agnaLopPoints = 0,
+                    remainingAgnaPoints = 0
                 )
             }
 
@@ -86,29 +87,48 @@ class ReportViewModel @Inject constructor(
                                     points = getTotalPoints(
                                         agna,
                                         dailyAgna
-                                    )
+                                    ),
+                                    date = form.date,
+                                    note = dailyAgna.note
                                 )
 
-                                if (dailyAgna.palai == true)
-                                    _state.update {
-                                        it.copy(
-                                            agnaPalanPoints = _state.value.agnaPalanPoints +
-                                                    getTotalPoints(
-                                                        agna,
-                                                        dailyAgna
-                                                    )
-                                        )
+                                when (dailyAgna.palai) {
+                                    true -> {
+                                        _state.update {
+                                            it.copy(
+                                                agnaPalanPoints = _state.value.agnaPalanPoints +
+                                                        getTotalPoints(
+                                                            agna,
+                                                            dailyAgna
+                                                        )
+                                            )
+                                        }
                                     }
-                                else
-                                    _state.update {
-                                        it.copy(
-                                            agnaLopPoints = _state.value.agnaLopPoints +
-                                                    getTotalPoints(
-                                                        agna,
-                                                        dailyAgna
-                                                    )
-                                        )
+
+                                    false -> {
+                                        _state.update {
+                                            it.copy(
+                                                agnaLopPoints = _state.value.agnaLopPoints +
+                                                        getTotalPoints(
+                                                            agna,
+                                                            dailyAgna
+                                                        )
+                                            )
+                                        }
                                     }
+
+                                    null -> {
+                                        _state.update {
+                                            it.copy(
+                                                remainingAgnaPoints = _state.value.remainingAgnaPoints +
+                                                        getTotalPoints(
+                                                            agna,
+                                                            dailyAgna
+                                                        )
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         } catch (e: Exception) {
                             Log.i("exceptionCaught", "Report VM: $e")
@@ -124,26 +144,46 @@ class ReportViewModel @Inject constructor(
         return (agna.rajipoPoints * dailyAgna.count).toLong()
     }
 
-    private fun setReportItemModelList(agna: Agna, dailyAgna: DailyAgna, points: Long) {
+    private fun setReportItemModelList(
+        agna: Agna,
+        dailyAgna: DailyAgna,
+        points: Long,
+        date: LocalDate,
+        note: String
+    ) {
 
         val item = _state.value.reportAgnaItemList.find { it.agnaId == agna.id }
         _state.value.reportAgnaItemList.removeAll { it.agnaId == agna.id }
 
         val reportItem = if (item != null) {
+            val noteList = item.noteList.toMutableList()
+            if (note.isNotEmpty()) {
+                noteList.add(Pair(note, date))
+            }
+
             ReportAgnaItem(
                 agnaId = item.agnaId,
                 agna = item.agna,
                 agnaLopPoints = if (dailyAgna.palai == false) item.agnaLopPoints + points else item.agnaLopPoints,
                 agnaPalanPoints = if (dailyAgna.palai == true) item.agnaPalanPoints + points else item.agnaPalanPoints,
-                totalPoints = item.totalPoints + points
+                remainingAgnaPoints = if (dailyAgna.palai == null) item.remainingAgnaPoints + points else item.remainingAgnaPoints,
+                totalPoints = item.totalPoints + points,
+                noteList = noteList
             )
         } else {
+            val noteList = if (note.isNotEmpty()) {
+                listOf(Pair(note, date))
+            } else {
+                emptyList()
+            }
             ReportAgnaItem(
                 agnaId = agna.id,
                 agna = agna.agna,
                 agnaLopPoints = if (dailyAgna.palai == false) points else 0L,
                 agnaPalanPoints = if (dailyAgna.palai == true) points else 0L,
-                totalPoints = points
+                remainingAgnaPoints = if (dailyAgna.palai == null) points else 0L,
+                totalPoints = points,
+                noteList = noteList
             )
         }
         val list = _state.value.reportAgnaItemList
@@ -204,6 +244,7 @@ class ReportViewModel @Inject constructor(
             totalAgnas = 0,
             agnaPalanPoints = 0,
             agnaLopPoints = 0,
+            remainingAgnaPoints = 0,
             dailyFormList = emptyList(),
             currentMonth = LocalDate.now().month,
             today = LocalDate.now(),
@@ -216,6 +257,7 @@ class ReportViewModel @Inject constructor(
         val totalAgnas: Int,
         val agnaPalanPoints: Long,
         val agnaLopPoints: Long,
+        val remainingAgnaPoints: Long,
         val dailyFormList: List<DailyForm>,
         val currentMonth: Month,
         val today: LocalDate,

@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
@@ -234,7 +235,7 @@ fun BottomNavigation(navController: NavHostController) {
                         Icon(
                             painter = painterResource(id = if (selected) screen.filledIcon else screen.outlinedIcon),
                             contentDescription = null,
-                            tint = if (selected) Color.White else Color.Black
+                            tint = if (selected) Color.White else LocalContentColor.current
                         )
                     },
                     label = {

@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
-import com.swaminarayan.shikshapatriApp.utils.dayFormatter
+import com.swaminarayan.shikshapatriApp.utils.toFormattedDay
 import java.time.LocalDate
 
 
@@ -176,7 +175,7 @@ fun CalenderItem(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = dayFormatter(date),
+                    text = date.toFormattedDay(),
                     color = textColor,
                     fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Bold
                 )

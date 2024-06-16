@@ -11,9 +11,6 @@ import java.time.LocalDate
 @Dao
 interface DailyFormDAO {
 
-    @Query("SELECT * FROM DailyForm")
-    fun getDailyReports(): Flow<List<DailyForm>>
-
     @Query("SELECT * FROM DailyForm ORDER BY date ASC")
     suspend fun dailyFormList(): List<DailyForm>
 

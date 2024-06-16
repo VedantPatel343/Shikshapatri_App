@@ -7,15 +7,15 @@ import java.time.format.DateTimeFormatter
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun dateFormatter(date: LocalDate): String {
+fun LocalDate.toFormattedDate() : String {
     val pattern = "dd-MM-yyyy"
     val formatter = DateTimeFormatter.ofPattern(pattern)
-    return date.format(formatter)
+    return this.format(formatter)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun dayFormatter(date: LocalDate): String {
+fun LocalDate.toFormattedDay() : String {
     val pattern = "EEE"
     val formatter = DateTimeFormatter.ofPattern(pattern)
-    return date.format(formatter)
+    return this.format(formatter)
 }

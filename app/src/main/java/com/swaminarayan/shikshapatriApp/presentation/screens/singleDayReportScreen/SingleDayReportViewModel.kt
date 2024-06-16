@@ -45,56 +45,96 @@ class SingleDayReportViewModel @Inject constructor(
     )
 
     init {
-        savedStateHandle.get<Long>(FORM_ID)?.let {
+        savedStateHandle.get<Long>(FORM_ID)?.let { formId ->
             viewModelScope.launch {
                 _state.update {
-                    it.copy(totalAgnas = agnaRepo.agnas().size.toLong())
+                    it.copy(
+                        totalAgnas = agnaRepo.agnas().size.toLong(),
+                        formId = formId
+                    )
                 }
-                setUpList(it)
+                setUpList(formId)
             }
         }
     }
 
     private fun setUpList(id: Long) {
+
+        _state.update {
+            it.copy(
+                agnaPalanList = emptyList(),
+                agnaLopList = emptyList(),
+                remainingAgnaList = emptyList(),
+                totalAgnaPalanPoints = 0L,
+                totalAgnaLopPoints = 0L,
+                totalRemainingAgnaPoints = 0L,
+                newUnSavedAgnas = 0
+            )
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             val form = dailyFormRepo.getDailyFormById(id)
             _state.update {
-                it.copy(date = form.date)
+                it.copy(
+                    date = form.date,
+                    newUnSavedAgnas = (_state.value.totalAgnas - form.dailyAgnas.size).toInt()
+                )
             }
 
             form.dailyAgnas.forEach { dailyAgna ->
                 val agna = agnaRepo.getAgnaById(dailyAgna.id)
                 try {
                     if (agna != null) {
-                        if (dailyAgna.palai == true) {
-                            val list = _state.value.agnaPalanList.toMutableList()
-                            list.add(
-                                agna.toDailyAgnaHelperClass(
-                                    dailyAgna.palai,
-                                    dailyAgna.count,
-                                    dailyAgna.note
+                        when (dailyAgna.palai) {
+                            true -> {
+                                val list = _state.value.agnaPalanList.toMutableList()
+                                list.add(
+                                    agna.toDailyAgnaHelperClass(
+                                        dailyAgna.palai,
+                                        dailyAgna.count,
+                                        dailyAgna.note
+                                    )
                                 )
-                            )
-                            _state.update {
-                                it.copy(
-                                    totalAgnaPalanPoints = _state.value.totalAgnaPalanPoints + agna.rajipoPoints,
-                                    agnaPalanList = list.toList()
-                                )
+                                _state.update {
+                                    it.copy(
+                                        totalAgnaPalanPoints = _state.value.totalAgnaPalanPoints + agna.rajipoPoints,
+                                        agnaPalanList = list.toList()
+                                    )
+                                }
                             }
-                        } else {
-                            val list = _state.value.agnaLopList.toMutableList()
-                            list.add(
-                                agna.toDailyAgnaHelperClass(
-                                    dailyAgna.palai,
-                                    dailyAgna.count,
-                                    dailyAgna.note
+
+                            false -> {
+                                val list = _state.value.agnaLopList.toMutableList()
+                                list.add(
+                                    agna.toDailyAgnaHelperClass(
+                                        dailyAgna.palai,
+                                        dailyAgna.count,
+                                        dailyAgna.note
+                                    )
                                 )
-                            )
-                            _state.update {
-                                it.copy(
-                                    totalAgnaLopPoints = _state.value.totalAgnaLopPoints + agna.rajipoPoints,
-                                    agnaLopList = list.toList()
+                                _state.update {
+                                    it.copy(
+                                        totalAgnaLopPoints = _state.value.totalAgnaLopPoints + agna.rajipoPoints,
+                                        agnaLopList = list.toList()
+                                    )
+                                }
+                            }
+
+                            null -> {
+                                val list = _state.value.remainingAgnaList.toMutableList()
+                                list.add(
+                                    agna.toDailyAgnaHelperClass(
+                                        null,
+                                        dailyAgna.count,
+                                        dailyAgna.note
+                                    )
                                 )
+                                _state.update {
+                                    it.copy(
+                                        totalRemainingAgnaPoints = _state.value.totalRemainingAgnaPoints + agna.rajipoPoints,
+                                        remainingAgnaList = list.toList()
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -103,12 +143,6 @@ class SingleDayReportViewModel @Inject constructor(
                 } catch (e: Exception) {
                     Log.i("exceptionCaught", "SingleDayReport VM: $e")
                 }
-            }
-            _state.update {
-                it.copy(
-                    remainingAgna = _state.value.totalAgnas -
-                            (_state.value.agnaPalanList.size + _state.value.agnaLopList.size)
-                )
             }
         }
     }
@@ -128,6 +162,10 @@ class SingleDayReportViewModel @Inject constructor(
         }
     }
 
+    fun onRefreshUiState() {
+        setUpList(_state.value.formId)
+    }
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -136,9 +174,12 @@ private fun initialUiState() = SDReportUiState(
     date = LocalDate.now(),
     agnaPalanList = emptyList(),
     agnaLopList = emptyList(),
+    remainingAgnaList = emptyList(),
     totalAgnaPalanPoints = 0L,
     totalAgnaLopPoints = 0L,
-    remainingAgna = 0L
+    totalRemainingAgnaPoints = 0L,
+    newUnSavedAgnas = 0,
+    formId = 0L
 )
 
 data class SDReportUiState(
@@ -146,7 +187,10 @@ data class SDReportUiState(
     val date: LocalDate,
     val agnaPalanList: List<DailyAgnaHelperClass>,
     val agnaLopList: List<DailyAgnaHelperClass>,
+    val remainingAgnaList: List<DailyAgnaHelperClass>,
     val totalAgnaPalanPoints: Long,
     val totalAgnaLopPoints: Long,
-    val remainingAgna: Long
+    val totalRemainingAgnaPoints: Long,
+    val newUnSavedAgnas: Int,
+    val formId: Long
 )

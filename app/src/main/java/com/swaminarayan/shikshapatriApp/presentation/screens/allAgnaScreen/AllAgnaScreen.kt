@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -106,7 +107,9 @@ fun AllAgnaScreen(
             Notice(
                 text = "Swipe agna right or left to edit or delete it.",
                 isNoticeVisible = isNoticeVisible,
-                leftArrowColor = Color.Gray
+                leftArrowColor = Color.Gray,
+                isLeftIconVisible = true,
+                isRightIconVisible = true
             )
             Spacer(modifier = Modifier.height(10.dp))
             LazyColumn {
@@ -251,7 +254,7 @@ fun AgnaItem(
                                 .padding(horizontal = 10.dp)
                         ) {
 
-                            Divider()
+                            HorizontalDivider()
                             Spacer(modifier = Modifier.height(10.dp))
 
                             Text(

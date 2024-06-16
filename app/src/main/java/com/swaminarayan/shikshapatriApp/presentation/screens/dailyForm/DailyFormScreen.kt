@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -70,7 +69,7 @@ import com.swaminarayan.shikshapatriApp.presentation.components.TopBar2Btn
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import com.swaminarayan.shikshapatriApp.utils.UiEvents
-import com.swaminarayan.shikshapatriApp.utils.dateFormatter
+import com.swaminarayan.shikshapatriApp.utils.toFormattedDate
 import com.swaminarayan.shikshapatriApp.utils.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -135,10 +134,8 @@ fun DailyFormScreen(
                             agnaPalanList = processedAgnaPalanList,
                             agnaLopList = processedAgnaLopList
                         )
-                        if (state.remainingAgnas.isEmpty()) {
-                            delay(1000)
-                            navController.popBackStack()
-                        }
+                        delay(1000)
+                        navController.popBackStack()
                     }
                 }
             }
@@ -161,7 +158,9 @@ fun DailyFormScreen(
                 Notice(
                     text = "Swipe agna right or left to fill the form",
                     isNoticeVisible = isNoticeVisible,
-                    leftArrowColor = Green
+                    leftArrowColor = Green,
+                    isRightIconVisible = true,
+                    isLeftIconVisible = true
                 )
 
                 DateRow(
@@ -189,7 +188,7 @@ fun DailyFormScreen(
                         items(state.remainingAgnas) { agna ->
                             DailyAgnaItem(
                                 agna,
-                                agnaProcessed = { palai, count ->
+                                onAgnaProcessed = { palai, count ->
                                     vm.agnaProcessed(agna, palai, false, count)
                                 },
                                 isAgnaProcessed = false,
@@ -218,7 +217,7 @@ fun DailyFormScreen(
                         ) { agna ->
                             DailyAgnaItem(
                                 agna,
-                                agnaProcessed = { palai, count ->
+                                onAgnaProcessed = { palai, count ->
                                     vm.agnaProcessed(agna, palai, true, count)
                                 },
                                 isAgnaProcessed = true,
@@ -260,7 +259,7 @@ fun DailyFormScreen(
                         ) { agna ->
                             DailyAgnaItem(
                                 agna,
-                                agnaProcessed = { palai, count ->
+                                onAgnaProcessed = { palai, count ->
                                     vm.agnaProcessed(agna, palai, true, count)
                                 },
                                 isAgnaProcessed = true,
@@ -337,7 +336,7 @@ fun DateRow(date: LocalDate, formId: Long?, onClick: () -> Unit) {
             }
         }
         Text(
-            text = dateFormatter(date),
+            text = date.toFormattedDate(),
             fontSize = 20.sp,
             modifier = Modifier
                 .weight(0.8f),
@@ -367,7 +366,7 @@ fun DateRow(date: LocalDate, formId: Long?, onClick: () -> Unit) {
 @Composable
 private fun DailyAgnaItem(
     dailyAgna: DailyAgnaHelperClass,
-    agnaProcessed: (palai: Boolean, count: Int) -> Unit,
+    onAgnaProcessed: (palai: Boolean, count: Int) -> Unit,
     onCountAddClick: (count: Int) -> Unit,
     onCountSubClick: (count: Int) -> Unit,
     onAENoteClicked: () -> Unit,
@@ -395,15 +394,15 @@ private fun DailyAgnaItem(
         }
     }
 
-    val textColor = if (dailyAgna.palai == null) {
-        MaterialTheme.colorScheme.onSecondary
+    val textColor = if (!isAgnaProcessed) {
+        Color.Black
     } else {
         Color.White
     }
 
     val palai = SwipeAction(
         onSwipe = {
-            agnaProcessed(true, count)
+            onAgnaProcessed(true, count)
             count = dailyAgna.count
         },
         icon = {
@@ -419,7 +418,7 @@ private fun DailyAgnaItem(
 
     val naPalai = SwipeAction(
         onSwipe = {
-            agnaProcessed(false, count)
+            onAgnaProcessed(false, count)
             count = dailyAgna.count
         },
         icon = {

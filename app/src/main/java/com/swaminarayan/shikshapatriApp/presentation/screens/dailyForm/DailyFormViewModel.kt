@@ -85,7 +85,7 @@ class DailyFormViewModel @Inject constructor(
             _state.value.agnas.forEach { agna ->
                 val da = getDailyAgna(agna.id, dailyAgnas)
 
-                if (da != null) {
+                if (da?.palai != null) {
                     val dailyAgna = agna.toDailyAgnaHelperClass(
                         palai = da.palai,
                         count = da.count,
@@ -96,7 +96,7 @@ class DailyFormViewModel @Inject constructor(
                     _state.update { it.copy(processedAgnas = list) }
 
                 } else {
-                    val dailyAgna = agna.toDailyAgnaHelperClass(false, 1, "")
+                    val dailyAgna = agna.toDailyAgnaHelperClass(null, 1, "")
                     val list = _state.value.remainingAgnas
                     list.add(dailyAgna)
                     _state.update { it.copy(remainingAgnas = list) }
@@ -133,45 +133,47 @@ class DailyFormViewModel @Inject constructor(
         agnaPalanList: List<DailyAgnaHelperClass>,
         agnaLopList: List<DailyAgnaHelperClass>
     ) {
-        if (_state.value.remainingAgnas.isNotEmpty()) {
+        val finalList = agnaPalanList.toMutableList()
+        finalList.addAll(agnaLopList)
+        finalList.addAll(_state.value.remainingAgnas)
+
+        if (_state.value.formId == -1L) {
+            val dailyForm = DailyForm(
+                dailyAgnas = finalList.toListOfDailyAgna(),
+                date = _state.value.date
+            )
             viewModelScope.launch {
-                _uiEventFlow.emit(UiEvents.ShowToast("First fill whole form."))
+                dailyFormRepo.upsertDailyForm(dailyForm)
+                _uiEventFlow.emit(UiEvents.ShowToast("Form Saved."))
             }
         } else {
-            val finalList = agnaPalanList.toMutableList()
-            finalList.addAll(agnaLopList)
-
-            if (_state.value.formId == -1L) {
-                val dailyForm = DailyForm(
-                    dailyAgnas = getDailyAgnaList(finalList),
-                    date = _state.value.date
-                )
-                viewModelScope.launch {
-                    dailyFormRepo.upsertDailyForm(dailyForm)
-                    _uiEventFlow.emit(UiEvents.ShowToast("Form Saved."))
-                }
-            } else {
-                val dailyForm = DailyForm(
-                    id = _state.value.formId!!,
-                    dailyAgnas = getDailyAgnaList(finalList),
-                    date = _state.value.date
-                )
-                viewModelScope.launch {
-                    dailyFormRepo.upsertDailyForm(dailyForm)
-                    _uiEventFlow.emit(UiEvents.ShowToast("Form Saved."))
-                }
+            val dailyForm = DailyForm(
+                id = _state.value.formId!!,
+                dailyAgnas = finalList.toListOfDailyAgna(),
+                date = _state.value.date
+            )
+            viewModelScope.launch {
+                dailyFormRepo.upsertDailyForm(dailyForm)
+                _uiEventFlow.emit(UiEvents.ShowToast("Form Saved."))
             }
+        }
 
-            _state.update {
-                it.copy(isLoadingAnimeVisible = true)
-            }
-
+        _state.update {
+            it.copy(isLoadingAnimeVisible = true)
         }
     }
 
-    private fun getDailyAgnaList(list: List<DailyAgnaHelperClass>): List<DailyAgna> {
-        return list.toListOfDailyAgna()
-    }
+//    private fun getDailyAgnaList(list: List<DailyAgnaHelperClass>): List<DailyAgna> {
+//        val finalList = mutableListOf<DailyAgnaHelperClass>()
+//        list.forEach {
+//            if(it.palai == null) {
+//                finalList.add(it.copy(count = 0))
+//            } else {
+//                finalList.add(it)
+//            }
+//        }
+//        return list.toListOfDailyAgna()
+//    }
 
     fun agnaProcessed(
         dailyAgna: DailyAgnaHelperClass,

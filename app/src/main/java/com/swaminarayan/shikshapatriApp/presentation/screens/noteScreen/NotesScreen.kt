@@ -75,8 +75,8 @@ fun NotesScreen(
                 )
             }
         }
-    ) {
-        Page(modifier = Modifier.padding(it)) {
+    ) { paddingValue ->
+        Page(modifier = Modifier.padding(paddingValue)) {
 
             Box(
                 Modifier
@@ -101,7 +101,9 @@ fun NotesScreen(
                 Notice(
                     text = "Swipe agna right or left to edit or delete it.",
                     isNoticeVisible = isNoticeVisible,
-                    leftArrowColor = Color.Gray
+                    leftArrowColor = Color.Gray,
+                    isLeftIconVisible = true,
+                    isRightIconVisible = true
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 LazyColumn {

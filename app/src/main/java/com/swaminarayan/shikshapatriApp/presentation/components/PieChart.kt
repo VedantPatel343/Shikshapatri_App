@@ -54,8 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swaminarayan.shikshapatriApp.constants.maharajList
 import com.swaminarayan.shikshapatriApp.domain.models.PieChartInput
-import com.swaminarayan.shikshapatriApp.ui.theme.Green
-import com.swaminarayan.shikshapatriApp.ui.theme.Red
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -72,7 +70,7 @@ fun PieChart(
     onPreviousMonthClicked: () -> Unit,
     onNextMonthClicked: () -> Unit,
     currentMonth: String,
-    date15year: String
+    currentYear: String
 ) {
 
     var circleCenter by remember {
@@ -149,7 +147,7 @@ fun PieChart(
                     )
                 }
                 Text(
-                    text = "$currentMonth $date15year",
+                    text = "$currentMonth $currentYear",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -282,7 +280,7 @@ fun getCeilOrFloorValue(value: Float): Int {
 }
 
 @Composable
-fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int, isAgnaPalanItem: Boolean) {
+fun SmallPieChart(pieChartList: List<PieChartInput>) {
 
     var circleCenter by remember {
         mutableStateOf(Offset.Zero)
@@ -326,13 +324,5 @@ fun SmallPieChart(pieChartList: List<PieChartInput>, percentage: Int, isAgnaPala
             )
 
         }
-
-        Text(
-            text = "$percentage %",
-            color = if (isAgnaPalanItem) Green else Red,
-            fontSize = 15.sp
-        )
-
     }
-
 }

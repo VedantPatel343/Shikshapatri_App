@@ -14,7 +14,7 @@ data class DailyForm(
 
 data class DailyAgna(
     val id: Long = 0L,
-    val palai: Boolean?,
+    val palai: Boolean? = null,
     val count: Int,
     val note: String
 )

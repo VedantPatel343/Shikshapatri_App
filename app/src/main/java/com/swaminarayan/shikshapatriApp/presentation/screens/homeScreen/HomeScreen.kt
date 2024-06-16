@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -46,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -64,8 +62,7 @@ import com.swaminarayan.shikshapatriApp.presentation.components.ImageDialog
 import com.swaminarayan.shikshapatriApp.presentation.components.Page
 import com.swaminarayan.shikshapatriApp.ui.theme.Green
 import com.swaminarayan.shikshapatriApp.ui.theme.Red
-import com.swaminarayan.shikshapatriApp.ui.theme.backgroundL
-import com.swaminarayan.shikshapatriApp.utils.dateFormatter
+import com.swaminarayan.shikshapatriApp.utils.toFormattedDate
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -103,15 +100,14 @@ fun HomeScreen(
     }
 
     val dates = if (state.firstDay == LocalDate.now()) {
-        dateFormatter(LocalDate.now())
+        LocalDate.now().toFormattedDate()
     } else {
-        "${dateFormatter(state.firstDay)}   -   ${
-            dateFormatter(
-                if (visibleDateList.contains(LocalDate.now()))
-                    LocalDate.now()
-                else
-                    state.lastDay
-            )
+        "${state.firstDay.toFormattedDate()}   -   ${
+            (if (visibleDateList.contains(LocalDate.now()))
+                LocalDate.now()
+            else
+                state.lastDay
+                    ).toFormattedDate()
         }"
     }
 
